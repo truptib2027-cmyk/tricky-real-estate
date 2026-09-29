@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin &amp; CRM Suite | Tricky Real Estate</title>
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+
+  <!-- Google Fonts: Cormorant Garamond & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background-color: #F4F3F0;
+      color: var(--color-charcoal);
+    }
+    .admin-navbar {
+      background: #141414;
+      color: #fff;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid rgba(184, 151, 90, 0.3);
+    }
+    .admin-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    .admin-nav-links {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+    }
+    .admin-nav-links a, .admin-nav-links button {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 6px 0;
+      transition: color 0.2s ease;
+      font-family: var(--font-sans);
+    }
+    .admin-nav-links a:hover, .admin-nav-links button:hover, .admin-nav-links .active {
+      color: var(--color-gold);
+    }
+    .admin-user-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* Notification Bell (Requirement 4) */
+    .notif-bell-container {
+      position: relative;
+      cursor: pointer;
+    }
+    .bell-icon-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      position: relative;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+    }
+    .bell-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: #e53935;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      border: 1px solid #141414;
+    }
+    .notif-dropdown {
+      position: absolute;
+      top: 42px;
+      right: 0;
+      width: 320px;
+      background: #1e1e1e;
+      border: 1px solid rgba(184, 151, 90, 0.3);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+      display: none;
+      z-index: 1100;
+    }
+    .notif-dropdown.show { display: block; }
+    .notif-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-gold);
+    }
+    .notif-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .notif-item:hover { background: rgba(255, 255, 255, 0.05); }
+
+    /* Score Badges */
+    .score-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .score-hot { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+    .score-warm { background: #fff8e1; color: #b78103; border: 1px solid #ffe082; }
+    .score-cold { background: #eceff1; color: #546e7a; border: 1px solid #cfd8dc; }
+
+    /* Kanban Pipeline Board */
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+      overflow-x: auto;
+      min-height: 600px;
+      align-items: flex-start;
+    }
+    .kanban-column {
+      background: #EAE8E3;
+      border: 1px solid var(--color-border-subtle);
+      border-top: 3px solid var(--color-charcoal);
+      padding: 14px 10px;
+      min-height: 550px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .kanban-col-new { border-top-color: var(--color-gold); }
+    .kanban-col-contacted { border-top-color: #2196f3; }
+    .kanban-col-viewing { border-top-color: #9c27b0; }
+    .kanban-col-offer { border-top-color: #ff9800; }
+    .kanban-col-won { border-top-color: #4caf50; }
+    .kanban-col-lost { border-top-color: #9e9e9e; }
+
+    .kanban-col-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 4px 6px 8px 6px;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .kanban-col-count {
+      background: rgba(0,0,0,0.1);
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 10px;
+    }
+    .kanban-card {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 14px;
+      cursor: grab;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .kanban-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+      border-color: var(--color-gold);
+    }
+    .kanban-card.dragging {
+      opacity: 0.4;
+      cursor: grabbing;
+    }
+    .kanban-card-title {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-charcoal);
+      margin-bottom: 4px;
+    }
+
+    /* Simple Charts */
+    .chart-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .chart-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+    }
+    .chart-bar-label {
+      width: 140px;
+      text-align: right;
+      color: var(--color-warm-gray);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .chart-bar-track {
+      flex-grow: 1;
+      height: 22px;
+      background: #EAE8E3;
+      position: relative;
+    }
+    .chart-bar-fill {
+      height: 100%;
+      background: var(--color-gold);
+      transition: width 0.6s ease;
+    }
+
+    @media (max-width: 1100px) {
+      .kanban-board {
+        grid-template-columns: repeat(3, 300px);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Top Navbar -->
+  <header class="admin-navbar">
+    <div class="admin-nav-left">
+      <a href="index.html" class="brand-logo logo-white" style="transform: scale(0.85); transform-origin: left;">
+        <span class="logo-tricky">Tricky</span>
+        <span class="logo-divider"></span>
+        <span class="logo-sub">REAL ESTATE</span>
+      </a>
+
+      <ul class="admin-nav-links">
+        <li><button onclick="switchView('dashboardView', this)" class="active">Dashboard</button></li>
+        <li><button onclick="switchView('boardView', this)">Pipeline Board</button></li>
+        <li><button onclick="switchView('leadsView', this)">Leads Directory</button></li>
+        <li><button onclick="switchView('viewingsView', this)">Viewings Schedule</button></li>
+        <li><button onclick="switchView('leaderboardView', this)">Leaderboard &amp; Stale</button></li>
+        <li><button onclick="switchView('inventoryView', this)">Properties Manager</button></li>
+      </ul>
+    </div>
+
+    <div class="admin-user-ctrl">
+      <!-- Notification Bell (Requirement 4) -->
+      <div class="notif-bell-container" id="notifBellWrapper">
+        <button class="bell-icon-btn" id="bellBtn" title="New Leads Notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="bell-badge" id="bellBadge">0</span>
+        </button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-header">
+            <span>Incoming Leads</span>
+            <span style="font-size: 9px; color: rgba(255,255,255,0.5);">Auto-Sync (60s)</span>
+          </div>
+          <div id="notifListContainer"></div>
+        </div>
+      </div>
+
+      <!-- Current Staff Info -->
+      <div style="text-align: right;">
+        <span id="currentUserName" style="font-size: 12px; font-weight: 600; color: #fff; display: block;">Jay (Managing Director)</span>
+        <span id="currentUserRole" style="font-size: 10px; color: var(--color-gold); letter-spacing: 0.15em; text-transform: uppercase;">Master Admin</span>
+      </div>
+
+      <!-- Logout -->
+      <button class="btn btn-sm btn-white-outline" style="padding: 6px 14px; font-size: 10px;" onclick="logoutStaff()">
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container" style="padding-top: 30px; padding-bottom: 80px;">
+
+    <!-- ======================================================================
+         VIEW 1: DASHBOARD
+         ====================================================================== -->
+    <div id="dashboardView" class="admin-view-pane">
+      <!-- KPI Row -->
+      <div class="metrics-row" style="margin-top: 0;">
+        <div class="metric-card">
+          <div class="metric-val" id="kpiNewLeads">0</div>
+          <div class="metric-label">New Leads Today</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" style="color: var(--color-gold);" id="kpiDealVolume">AED 312M</div>
+          <div class="metric-label">Total Pipeline Value</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="kpiViewingsWeek">10</div>
+          <div class="metric-label">Viewings Scheduled</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" style="color: #2e7d32;" id="kpiCommissionMonth">AED 2,944,000</div>
+          <div class="metric-label">Completed 2% Commission</div>
+        </div>
+      </div>
+
+      <!-- Charts & Breakdown Grid -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Chart 1: Pipeline Stage Distribution -->
+        <div style="background: #fff; border: 1px solid var(--color-border-subtle); padding: 28px;">
+          <span class="section-label">SALES FUNNEL</span>
+          <h3 style="font-family: var(--font-serif); font-size: 22px; font-weight: 300;">Pipeline Distribution</h3>
+          <div class="chart-bar-container" id="stageChart"></div>
+        </div>
+
+        <!-- Chart 2: Lead Sources -->
+        <div style="background: #fff; border: 1px solid var(--color-border-subtle); padding: 28px;">
+          <span class="section-label">ACQUISITION CHANNELS</span>
+          <h3 style="font-family: var(--font-serif); font-size: 22px; font-weight: 300;">Lead Source Performance</h3>
+          <div class="chart-bar-container" id="sourceChart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         VIEW 2: KANBAN PIPELINE BOARD (Drag & Drop)
+         ====================================================================== -->
+    <div id="boardView" class="admin-view-pane" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span class="section-label">INTERACTIVE DEAL FLOW</span>
+          <h2 class="section-heading" style="font-size: 32px;">Drag &amp; Drop Pipeline</h2>
+        </div>
+        <div style="font-size: 12px; color: var(--color-warm-gray);">
+          💡 Drag leads between columns to update stage. Moving to <strong>Won</strong> calculates 2% commission and marks property as sold.
+        </div>
+      </div>
+
+      <div class="kanban-board" id="kanbanBoard">
+        <!-- Columns: New, Contacted, Viewing, Offer, Won, Lost -->
+        <div class="kanban-column kanban-col-new" data-stage="New" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'New')">
+          <div class="kanban-col-header">
+            <span>New Leads</span>
+            <span class="kanban-col-count" id="countNew">0</span>
+          </div>
+          <div class="kanban-cards-wrapper" id="colNew"></div>
+        </div>
+
+        <div class="kanban-column kanban-col-contacted" data-stage="Contacted" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'Contacted')">
+          <div class="kanban-col-header">
+            <span>Contacted</span>
+            <span class="kanban-col-count" id="countContacted">0</span>
+          </div>
+          <div class="kanban-cards-wrapper" id="colContacted"></div>
+        </div>
+
+        <div class="kanban-column kanban-col-viewing" data-stage="Viewing" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'Viewing')">
+          <div class="kanban-col-header">
+            <span>Viewing</span>
+            <span class="kanban-col-count" id="countViewing">0</span>
+          </div>
+          <div class="kanban-cards-wrapper" id="colViewing"></div>
+        </div>
+
+        <div class="kanban-column kanban-col-offer" data-stage="Offer" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'Offer')">
+          <div class="kanban-col-header">
+            <span>Offer / LOI</span>
+            <span class="kanban-col-count" id="countOffer">0</span>
+          </div>
+          <div class="kanban-cards-wrapper" id="colOffer"></div>
+        </div>
+
+        <div class="kanban-column kanban-col-won" data-stage="Won" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'Won')">
+          <div class="kanban-col-header">
+            <span>Won &amp; Closed</span>
+            <span class="kanban-col-count" id="countWon">0</span>
+          </div>
+          <div class="kanban-cards-wrapper" id="colWon"></div>
+        </div>
+
+        <div class="kanban-column kanban-col-lost" data-stage="Lost" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'Lost')">
+          <div class="kanban-col-header">
+            <span>Archived / Lost</span>
+            <span class="kanban-col-count" id="countLost">0</span>
+          </div>
+          <div class="kanban-cards-wrapper" id="colLost"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         VIEW 3: LEADS DIRECTORY (With Filters & Excel Download)
+         ====================================================================== -->
+    <div id="leadsView" class="admin-view-pane" style="display: none;">
+      <div style="background: #fff; border: 1px solid var(--color-border-subtle); padding: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+          <div>
+            <span class="section-label">CLIENT RELATIONSHIPS</span>
+            <h2 class="section-heading" style="font-size: 32px;">Leads Directory</h2>
+          </div>
+          <button class="btn btn-gold-solid btn-sm" onclick="exportLeadsToExcel()">
+            📥 Download To Excel (CSV)
+          </button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+          <input type="text" id="leadSearchInput" placeholder="Search by client name, email, phone, or reference..." 
+                 oninput="filterLeadsList()" style="padding: 10px; border: 1px solid var(--color-light-gray); font-size: 13px;">
+          
+          <select id="leadStageFilter" onchange="filterLeadsList()" style="padding: 10px; border: 1px solid var(--color-light-gray); font-size: 13px;">
+            <option value="all">All Stages</option>
+            <option value="New">New</option>
+            <option value="Contacted">Contacted</option>
+            <option value="Viewing">Viewing</option>
+            <option value="Offer">Offer</option>
+            <option value="Won">Won</option>
+            <option value="Lost">Lost</option>
+          </select>
+
+          <select id="leadScoreFilter" onchange="filterLeadsList()" style="padding: 10px; border: 1px solid var(--color-light-gray); font-size: 13px;">
+            <option value="all">All Score Ratings</option>
+            <option value="HOT">HOT (70-100)</option>
+            <option value="WARM">WARM (40-69)</option>
+            <option value="COLD">COLD (0-39)</option>
+          </select>
+
+          <select id="leadAgentFilter" onchange="filterLeadsList()" style="padding: 10px; border: 1px solid var(--color-light-gray); font-size: 13px;">
+            <option value="all">All Agents</option>
+            <option value="1">Tariq Al-Mansoor</option>
+            <option value="2">Elena Rostova</option>
+            <option value="3">Marcus Sterling</option>
+          </select>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Score</th>
+                <th>Ref #</th>
+                <th>Client Name</th>
+                <th>Contact</th>
+                <th>Source Form</th>
+                <th>Budget (AED)</th>
+                <th>Stage</th>
+                <th>Assigned Agent</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="fullLeadsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         VIEW 4: VIEWINGS SCHEDULE
+         ====================================================================== -->
+    <div id="viewingsView" class="admin-view-pane" style="display: none;">
+      <div style="background: #fff; border: 1px solid var(--color-border-subtle); padding: 28px;">
+        <span class="section-label">SCHEDULED PROPERTY INSPECTIONS</span>
+        <h2 class="section-heading" style="font-size: 32px; margin-bottom: 20px;">Private Viewings</h2>
+        
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Residence</th>
+                <th>Client</th>
+                <th>Phone</th>
+                <th>Agent</th>
+                <th>Status</th>
+                <th>Notes / Feedback</th>
+              </tr>
+            </thead>
+            <tbody id="viewingsTableFull"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         VIEW 5: LEADERBOARD & STALE LEADS (3+ Days Inactive)
+         ====================================================================== -->
+    <div id="leaderboardView" class="admin-view-pane" style="display: none;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Agent Leaderboard -->
+        <div style="background: #fff; border: 1px solid var(--color-border-subtle); padding: 28px;">
+          <span class="section-label">PERFORMANCE RANKING</span>
+          <h2 class="section-heading" style="font-size: 26px; margin-bottom: 20px;">Agent Leaderboard</h2>
+          <div id="leaderboardContainer"></div>
+        </div>
+
+        <!-- Stale Leads (3+ Days Inactivity) -->
+        <div style="background: #fff; border: 1px solid var(--color-border-subtle); padding: 28px;">
+          <span class="section-label" style="color: #c62828;">URGENT FOLLOW-UP REQUIRED</span>
+          <h2 class="section-heading" style="font-size: 26px; margin-bottom: 12px;">Stale Leads (3+ Days Inactive)</h2>
+          <p style="font-size: 12px; color: var(--color-warm-gray); margin-bottom: 20px;">
+            These clients have received no logged contact or stage progression in 3 or more days.
+          </p>
+          <div id="staleLeadsContainer"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         VIEW 6: PROPERTY & PROJECT INVENTORY MANAGER
+         ====================================================================== -->
+    <div id="inventoryView" class="admin-view-pane" style="display: none;">
+      <div style="background: #fff; border: 1px solid var(--color-border-subtle); padding: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px;">
+          <div>
+            <span class="section-label">ASSET INVENTORY</span>
+            <h2 class="section-heading" style="font-size: 32px;">Manage Properties &amp; Projects</h2>
+          </div>
+          <button class="btn btn-gold-solid btn-sm" onclick="openAddPropertyModal()">+ Add New Property</button>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Community</th>
+                <th>Price (AED)</th>
+                <th>Bedrooms</th>
+                <th>Area</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryPropertiesTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==========================================================================
+       MODALS: LEAD DOSSIER, "WON" SALE PRICE & COMMISSION, ADD PROPERTY
+       ========================================================================== -->
+
+  <!-- Lead Dossier Modal -->
+  <div class="modal-overlay" id="leadDossierModal">
+    <div class="modal-container" style="max-width: 800px;">
+      <button class="modal-close-btn" onclick="closeDossierModal()">&times;</button>
+      <div class="modal-body" style="padding: 40px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+          <div>
+            <span class="section-label" id="dossierRef">TRK-108214</span>
+            <h2 class="section-heading" id="dossierName" style="font-size: 32px;">Client Name</h2>
+          </div>
+          <span class="score-badge" id="dossierScoreBadge">HOT 85/100</span>
+        </div>
+
+        <!-- Quick Call & WhatsApp Action Buttons -->
+        <div style="display: flex; gap: 12px; margin: 16px 0 24px 0;">
+          <a href="#" id="dossierCallBtn" class="btn btn-sm btn-charcoal-solid" style="display: flex; align-items: center; gap: 8px;">
+            📞 Call Client
+          </a>
+          <a href="#" id="dossierWaBtn" target="_blank" class="btn btn-sm btn-gold-solid" style="display: flex; align-items: center; gap: 8px;">
+            💬 WhatsApp Client
+          </a>
+        </div>
+
+        <!-- Details Grid -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; background: var(--color-offwhite); padding: 20px; font-size: 13px; margin-bottom: 24px;">
+          <div><strong>Email:</strong> <span id="dossierEmail">-</span></div>
+          <div><strong>Phone:</strong> <span id="dossierPhone">-</span></div>
+          <div><strong>Source Form:</strong> <span id="dossierSource" style="color: var(--color-gold);">-</span></div>
+          <div><strong>Budget:</strong> <span id="dossierBudget">-</span></div>
+          <div><strong>Preferred Area:</strong> <span id="dossierArea">-</span></div>
+          <div><strong>Timeframe:</strong> <span id="dossierTimeframe">-</span></div>
+          <div style="grid-column: span 2;"><strong>Client Notes/Inquiry:</strong> <p id="dossierMessage" style="margin-top: 4px; color: var(--color-warm-gray);"></p></div>
+        </div>
+
+        <!-- Stage & Agent Controls -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+          <div>
+            <label style="font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-warm-gray); display: block; margin-bottom: 6px;">
+              Change Stage
+            </label>
+            <select id="dossierStageSelect" onchange="updateDossierStage()" style="width: 100%; padding: 10px; border: 1px solid var(--color-light-gray);">
+              <option value="New">New</option>
+              <option value="Contacted">Contacted</option>
+              <option value="Viewing">Viewing</option>
+              <option value="Offer">Offer</option>
+              <option value="Won">Won (Closed Deal)</option>
+              <option value="Lost">Lost</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-warm-gray); display: block; margin-bottom: 6px;">
+              Reassign Agent
+            </label>
+            <select id="dossierAgentSelect" onchange="reassignDossierAgent()" style="width: 100%; padding: 10px; border: 1px solid var(--color-light-gray);">
+              <option value="1">Tariq Al-Mansoor</option>
+              <option value="2">Elena Rostova</option>
+              <option value="3">Marcus Sterling</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Notes Thread -->
+        <div style="border-top: 1px solid var(--color-border-subtle); padding-top: 20px;">
+          <span class="section-label">ACTIVITY &amp; NOTES TIMELINE</span>
+          <div id="dossierNotesList" style="max-height: 180px; overflow-y: auto; margin: 12px 0; display: flex; flex-direction: column; gap: 10px;"></div>
+
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="newNoteInput" placeholder="Add internal relationship note..." style="flex-grow: 1; padding: 10px; border: 1px solid var(--color-light-gray); font-size: 13px;">
+            <button class="btn btn-sm btn-charcoal-solid" onclick="submitDossierNote()">Add Note</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- "WON" SALE MODAL: Asks for Sale Price & Computes 2% Commission -->
+  <div class="modal-overlay" id="wonSaleModal">
+    <div class="modal-container" style="max-width: 520px;">
+      <button class="modal-close-btn" onclick="closeWonModal()">&times;</button>
+      <div class="modal-body" style="padding: 40px 36px; text-align: center;">
+        <span class="section-label" style="color: #2e7d32;">DEAL WON &amp; CLOSED</span>
+        <h3 style="font-family: var(--font-serif); font-size: 32px; font-weight: 300;">Record Completed Sale</h3>
+        <div class="thin-gold-line center"></div>
+        <p style="font-size: 13px; color: var(--color-warm-gray); margin-bottom: 20px;">
+          Enter the final agreed sale price. The system will automatically calculate the <strong>2% advisory commission</strong> and mark the property as <strong>SOLD</strong>.
+        </p>
+
+        <form id="wonSaleForm" onsubmit="confirmWonSale(event)">
+          <div class="form-group" style="text-align: left; margin-bottom: 16px;">
+            <label>Agreed Sale Price (AED) *</label>
+            <input type="number" id="wonSalePrice" required step="50000" min="500000" value="15000000" 
+                   oninput="updateCommissionPreview()" style="font-size: 18px; font-weight: 600;">
+          </div>
+
+          <div style="background: var(--color-offwhite); padding: 16px; border: 1px dashed var(--color-gold); margin-bottom: 24px; text-align: left;">
+            <div style="font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-warm-gray);">2% Advisory Commission Earned:</div>
+            <div id="wonCommissionPreview" style="font-family: var(--font-serif); font-size: 28px; color: var(--color-gold); font-weight: 600;">
+              AED 300,000
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-gold-solid" style="width: 100%;">
+            Confirm Sale &amp; Mark Property Sold
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Property Modal -->
+  <div class="modal-overlay" id="addPropertyModal">
+    <div class="modal-container" style="max-width: 600px;">
+      <button class="modal-close-btn" onclick="closeAddPropertyModal()">&times;</button>
+      <div class="modal-body" style="padding: 36px;">
+        <span class="section-label">INVENTORY MANAGEMENT</span>
+        <h3 style="font-family: var(--font-serif); font-size: 28px; font-weight: 300; margin-bottom: 20px;">Add Ready Property</h3>
+
+        <form id="newPropertyForm" onsubmit="submitNewProperty(event)">
+          <div class="form-group">
+            <label>Residence Title *</label>
+            <input type="text" id="npTitle" required placeholder="e.g. Royal Crescent Penthouse">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Property Type *</label>
+              <select id="npType">
+                <option value="Villa">Villa / Mansion</option>
+                <option value="Penthouse">Sky Penthouse</option>
+                <option value="Apartment">Luxury Apartment</option>
+                <option value="Townhouse">Townhome</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Community *</label>
+              <select id="npCommunity">
+                <option value="Palm Jumeirah">Palm Jumeirah</option>
+                <option value="Downtown Dubai">Downtown Dubai</option>
+                <option value="Dubai Marina">Dubai Marina</option>
+                <option value="Business Bay">Business Bay</option>
+                <option value="Dubai Hills Estate">Dubai Hills Estate</option>
+                <option value="Jumeirah Village Circle (JVC)">JVC</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Price in AED *</label>
+              <input type="number" id="npPrice" required placeholder="e.g. 24000000">
+            </div>
+            <div class="form-group">
+              <label>Built-Up Sq.Ft. *</label>
+              <input type="number" id="npSqft" required placeholder="e.g. 8500">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Bedrooms *</label>
+              <input type="number" id="npBeds" required min="1" max="10" value="4">
+            </div>
+            <div class="form-group">
+              <label>Bathrooms *</label>
+              <input type="number" id="npBaths" required min="1" max="12" value="5">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="npDesc" placeholder="Architectural details, views, and materials..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-charcoal-solid" style="width: 100%;">
+            Publish Residence To Portfolio
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/shared.js"></script>
+  <script>
+    let currentUser = null;
+    let leadsData = [];
+    let currentDossierLead = null;
+    let pendingWonLeadId = null;
+
+    // Check Authentication on Page Load
+    document.addEventListener('DOMContentLoaded', () => {
+      const sessionStr = localStorage.getItem('trickyStaffSession');
+      if (!sessionStr) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      currentUser = JSON.parse(sessionStr);
+      document.getElementById('currentUserName').textContent = currentUser.name;
+      document.getElementById('currentUserRole').textContent = currentUser.role === 'admin' ? 'Master Admin' : 'Senior Advisor';
+
+      // Load initial data
+      loadDashboardData();
+      loadNotifications();
+      // Auto-refresh notification bell every 60 seconds (Requirement 4)
+      setInterval(loadNotifications, 60000);
+
+      // Bell dropdown toggle
+      document.getElementById('bellBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('notifDropdown').classList.toggle('show');
+      });
+      document.addEventListener('click', () => {
+        document.getElementById('notifDropdown').classList.remove('show');
+      });
+    });
+
+    function logoutStaff() {
+      localStorage.removeItem('trickyStaffSession');
+      window.location.href = 'login.html';
+    }
+
+    // Switch Navigation Views
+    function switchView(viewId, btn) {
+      document.querySelectorAll('.admin-view-pane').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.admin-nav-links button').forEach(b => b.classList.remove('active'));
+      document.getElementById(viewId).style.display = 'block';
+      if (btn) btn.classList.add('active');
+
+      if (viewId === 'boardView') renderKanbanBoard();
+      if (viewId === 'leadsView') loadLeadsDirectory();
+      if (viewId === 'viewingsView') loadViewings();
+      if (viewId === 'leaderboardView') loadLeaderboardAndStale();
+      if (viewId === 'inventoryView') loadInventory();
+    }
+
+    // Load Notifications (Requirement 4)
+    async function loadNotifications() {
+      try {
+        const res = await fetch(`/api/admin/notifications?user_id=${currentUser.id}&user_role=${currentUser.role}`);
+        const data = await res.json();
+        const badge = document.getElementById('bellBadge');
+        badge.textContent = data.unreadCount;
+        badge.style.display = data.unreadCount > 0 ? 'flex' : 'none';
+
+        const list = document.getElementById('notifListContainer');
+        if (data.recentLeads && data.recentLeads.length) {
+          list.innerHTML = data.recentLeads.map(l => `
+            <div class="notif-item" onclick="openLeadDossier(${l.id})">
+              <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <strong style="color: #fff;">${l.name}</strong>
+                <span class="score-badge ${l.label === 'HOT' ? 'score-hot' : l.label === 'WARM' ? 'score-warm' : 'score-cold'}">${l.label}</span>
+              </div>
+              <div style="font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px;">
+                ${l.form} &bull; Ref: ${l.ref}
+              </div>
+            </div>
+          `).join('');
+        } else {
+          list.innerHTML = `<div style="padding: 16px; font-size: 12px; color: rgba(255,255,255,0.4); text-align: center;">No new unread leads</div>`;
+        }
+      } catch (err) {
+        console.error('Failed to poll notifications:', err);
+      }
+    }
+
+    // Load Dashboard Metrics & Simple Charts (Requirement 5)
+    async function loadDashboardData() {
+      try {
+        const res = await fetch(`/api/admin/leads?user_id=${currentUser.id}&user_role=${currentUser.role}`);
+        leadsData = await res.json();
+
+        // 1. New leads today
+        const todayLeads = leadsData.filter(l => l.stage === 'New').length;
+        document.getElementById('kpiNewLeads').textContent = todayLeads;
+
+        // 1b. Total Pipeline Value (Dynamically computed from active leads)
+        const totalDealValue = leadsData.reduce((sum, l) => sum + (parseFloat(l.budget_aed) || 0), 0);
+        document.getElementById('kpiDealVolume').textContent = totalDealValue > 0 
+          ? `AED ${(totalDealValue / 1000000).toFixed(1)}M` 
+          : 'AED 0M';
+
+        // 2. Viewings
+        const vRes = await fetch(`/api/admin/viewings?user_id=${currentUser.id}&user_role=${currentUser.role}`);
+        const vData = await vRes.json();
+        document.getElementById('kpiViewingsWeek').textContent = vData.length;
+
+        // 3. Sales & Commission
+        const sRes = await fetch('/api/admin/sales');
+        const sData = await sRes.json();
+        if (sData.totalCommissionAED) {
+          document.getElementById('kpiCommissionMonth').textContent = `AED ${Math.round(sData.totalCommissionAED).toLocaleString('en-US')}`;
+        }
+
+        // Render Stage Chart
+        const stages = ['New', 'Contacted', 'Viewing', 'Offer', 'Won', 'Lost'];
+        const stageCounts = stages.map(s => leadsData.filter(l => l.stage === s).length);
+        const maxStage = Math.max(...stageCounts, 1);
+
+        document.getElementById('stageChart').innerHTML = stages.map((s, idx) => `
+          <div class="chart-bar-row">
+            <div class="chart-bar-label">${s} (${stageCounts[idx]})</div>
+            <div class="chart-bar-track">
+              <div class="chart-bar-fill" style="width: ${(stageCounts[idx] / maxStage) * 100}%;"></div>
+            </div>
+          </div>
+        `).join('');
+
+        // Render Source Chart
+        const sources = {};
+        leadsData.forEach(l => {
+          const src = l.source_form || 'Web Form';
+          sources[src] = (sources[src] || 0) + 1;
+        });
+        const sourceKeys = Object.keys(sources);
+        const maxSrc = Math.max(...Object.values(sources), 1);
+
+        document.getElementById('sourceChart').innerHTML = sourceKeys.map(k => `
+          <div class="chart-bar-row">
+            <div class="chart-bar-label" title="${k}">${k.split(':')[0]} (${sources[k]})</div>
+            <div class="chart-bar-track">
+              <div class="chart-bar-fill" style="width: ${(sources[k] / maxSrc) * 100}%; background-color: var(--color-charcoal);"></div>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error('Dashboard load error:', err);
+      }
+    }
+
+    // =========================================================================
+    // KANBAN BOARD & DRAG-AND-DROP (Requirement 5)
+    // =========================================================================
+    function renderKanbanBoard() {
+      const stages = ['New', 'Contacted', 'Viewing', 'Offer', 'Won', 'Lost'];
+      stages.forEach(s => {
+        const container = document.getElementById(`col${s}`);
+        const countBadge = document.getElementById(`count${s}`);
+        const items = leadsData.filter(l => l.stage === s);
+        countBadge.textContent = items.length;
+
+        container.innerHTML = items.map(l => `
+          <div class="kanban-card" draggable="true" ondragstart="handleDragStart(event, ${l.id})" onclick="openLeadDossier(${l.id})">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+              <span class="score-badge ${l.score_label === 'HOT' ? 'score-hot' : l.score_label === 'WARM' ? 'score-warm' : 'score-cold'}">
+                ${l.score_label} ${l.score}
+              </span>
+              <span style="font-size: 10px; color: var(--color-warm-gray);">${l.reference_no}</span>
+            </div>
+            <div class="kanban-card-title">${l.full_name}</div>
+            <div style="font-size: 11.5px; color: var(--color-warm-gray); margin-bottom: 6px;">
+              ${l.preferred_community || 'Dubai'} &bull; <strong style="color: var(--color-charcoal);">${l.budget_aed || 'Confidential'}</strong>
+            </div>
+            <div style="font-size: 10.5px; color: var(--color-gold);">
+              ${l.source_form ? l.source_form.split(':')[0] : 'Inquiry'}
+            </div>
+          </div>
+        `).join('');
+      });
+    }
+
+    function handleDragStart(e, leadId) {
+      e.dataTransfer.setData('text/plain', String(leadId));
+      e.target.classList.add('dragging');
+    }
+
+    function allowDrop(e) {
+      e.preventDefault();
+    }
+
+    async function handleDrop(e, newStage) {
+      e.preventDefault();
+      const leadId = e.dataTransfer.getData('text/plain');
+      if (!leadId) return;
+
+      // Requirement 5: When marked "Won", ask for sale price and compute 2% commission!
+      if (newStage === 'Won') {
+        promptWonSale(leadId);
+        return;
+      }
+
+      await applyStageChange(leadId, newStage);
+    }
+
+    async function applyStageChange(leadId, newStage, extraData = {}) {
+      try {
+        const res = await fetch(`/api/admin/leads/${leadId}/stage`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stage: newStage, staff_name: currentUser.name, ...extraData })
+        });
+        const data = await res.json();
+        
+        // Update local state
+        const lead = leadsData.find(l => String(l.id) === String(leadId));
+        if (lead) lead.stage = newStage;
+
+        renderKanbanBoard();
+        loadDashboardData();
+      } catch (err) {
+        console.error('Failed to update stage:', err);
+      }
+    }
+
+    function promptWonSale(leadId) {
+      pendingWonLeadId = leadId;
+      const lead = leadsData.find(l => String(l.id) === String(leadId));
+      if (lead) {
+        document.getElementById('wonSalePrice').value = lead.budget_aed && parseInt(lead.budget_aed.replace(/[^0-9]/g, '')) ? parseInt(lead.budget_aed.replace(/[^0-9]/g, '')) : 15000000;
+        updateCommissionPreview();
+      }
+      document.getElementById('wonSaleModal').classList.add('active');
+    }
+
+    function updateCommissionPreview() {
+      const price = parseFloat(document.getElementById('wonSalePrice').value) || 0;
+      const comm = price * 0.02; // Exactly 2% commission per prompt
+      document.getElementById('wonCommissionPreview').textContent = `AED ${Math.round(comm).toLocaleString('en-US')}`;
+    }
+
+    function closeWonModal() {
+      document.getElementById('wonSaleModal').classList.remove('active');
+      pendingWonLeadId = null;
+    }
+
+    async function confirmWonSale(e) {
+      e.preventDefault();
+      const salePrice = parseFloat(document.getElementById('wonSalePrice').value);
+      if (!pendingWonLeadId) return;
+
+      await applyStageChange(pendingWonLeadId, 'Won', { sale_price_aed: salePrice });
+      closeWonModal();
+      alert(`Deal registered as WON! 2% Commission: AED ${Math.round(salePrice * 0.02).toLocaleString('en-US')}. Property status updated to SOLD.`);
+    }
+
+    // =========================================================================
+    // LEADS DIRECTORY & EXCEL DOWNLOAD (Requirement 5)
+    // =========================================================================
+    async function loadLeadsDirectory() {
+      try {
+        const res = await fetch(`/api/admin/leads?user_id=${currentUser.id}&user_role=${currentUser.role}`);
+        leadsData = await res.json();
+        filterLeadsList();
+      } catch (err) {
+        console.error('Failed to load leads directory:', err);
+      }
+    }
+
+    function filterLeadsList() {
+      const q = document.getElementById('leadSearchInput').value.toLowerCase().trim();
+      const st = document.getElementById('leadStageFilter').value;
+      const sc = document.getElementById('leadScoreFilter').value;
+      const ag = document.getElementById('leadAgentFilter').value;
+
+      let filtered = [...leadsData];
+      if (q) {
+        filtered = filtered.filter(l => 
+          l.full_name.toLowerCase().includes(q) ||
+          l.email.toLowerCase().includes(q) ||
+          l.phone.includes(q) ||
+          l.reference_no.toLowerCase().includes(q)
+        );
+      }
+      if (st !== 'all') filtered = filtered.filter(l => l.stage === st);
+      if (sc !== 'all') filtered = filtered.filter(l => l.score_label === sc);
+      if (ag !== 'all') filtered = filtered.filter(l => String(l.assigned_agent_id) === ag);
+
+      const tbody = document.getElementById('fullLeadsTable');
+      tbody.innerHTML = filtered.map(l => `
+        <tr onclick="openLeadDossier(${l.id})" style="cursor: pointer;">
+          <td><span class="score-badge ${l.score_label === 'HOT' ? 'score-hot' : l.score_label === 'WARM' ? 'score-warm' : 'score-cold'}">${l.score_label} ${l.score}</span></td>
+          <td><strong style="color: var(--color-gold);">${l.reference_no}</strong></td>
+          <td><strong>${l.full_name}</strong></td>
+          <td style="font-size: 11.5px; color: var(--color-warm-gray);">${l.phone}<br>${l.email}</td>
+          <td style="font-size: 11px;">${l.source_form || 'Web'}</td>
+          <td>${l.budget_aed || 'Confidential'}</td>
+          <td><span class="admin-badge badge-contacted">${l.stage}</span></td>
+          <td>${l.agent_name || 'Tariq Al-Mansoor'}</td>
+          <td>
+            <button class="btn btn-sm btn-gold-solid" style="padding: 4px 10px; font-size: 9px;">Dossier</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Export to Excel / CSV (Requirement 5)
+    function exportLeadsToExcel() {
+      let csvContent = 'data:text/csv;charset=utf-8,';
+      csvContent += 'Reference No,Client Name,Phone,Email,Score,Label,Stage,Budget AED,Community,Source Form,Assigned Agent\r\n';
+
+      leadsData.forEach(l => {
+        const row = [
+          `"${l.reference_no}"`,
+          `"${l.full_name}"`,
+          `"${l.phone}"`,
+          `"${l.email}"`,
+          l.score,
+          `"${l.score_label}"`,
+          `"${l.stage}"`,
+          `"${l.budget_aed || ''}"`,
+          `"${l.preferred_community || ''}"`,
+          `"${l.source_form || ''}"`,
+          `"${l.agent_name || ''}"`
+        ].join(',');
+        csvContent += row + '\r\n';
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `Tricky_Real_Estate_Buyer_Leads_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // =========================================================================
+    // LEAD DOSSIER MODAL WITH CALL / WHATSAPP / NOTES (Requirement 5)
+    // =========================================================================
+    async function openLeadDossier(id) {
+      try {
+        const res = await fetch(`/api/admin/leads/${id}`);
+        const lead = await res.json();
+        currentDossierLead = lead;
+
+        document.getElementById('dossierRef').textContent = lead.reference_no;
+        document.getElementById('dossierName').textContent = lead.full_name;
+        document.getElementById('dossierScoreBadge').textContent = `${lead.score_label} ${lead.score}/100`;
+        document.getElementById('dossierScoreBadge').className = `score-badge ${lead.score_label === 'HOT' ? 'score-hot' : lead.score_label === 'WARM' ? 'score-warm' : 'score-cold'}`;
+
+        document.getElementById('dossierEmail').textContent = lead.email;
+        document.getElementById('dossierPhone').textContent = lead.phone;
+        document.getElementById('dossierSource').textContent = lead.source_form || 'Web Form';
+        document.getElementById('dossierBudget').textContent = lead.budget_aed || 'Confidential';
+        document.getElementById('dossierArea').textContent = lead.preferred_community || 'Dubai Prime';
+        document.getElementById('dossierTimeframe').textContent = lead.purchase_timeframe || 'Within 1-3 Months';
+        document.getElementById('dossierMessage').textContent = lead.message || 'No additional criteria recorded.';
+
+        // Direct Call and WhatsApp Links
+        document.getElementById('dossierCallBtn').href = `tel:${lead.phone.replace(/[^0-9+]/g, '')}`;
+        document.getElementById('dossierWaBtn').href = `https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}?text=Dear%20${encodeURIComponent(lead.full_name)}%2C%20following%20up%20on%20your%20inquiry%20with%20Tricky%20Real%20Estate.`;
+
+        // Selectors
+        document.getElementById('dossierStageSelect').value = lead.stage;
+        document.getElementById('dossierAgentSelect').value = lead.assigned_agent_id || 1;
+
+        // Notes
+        renderDossierNotes(lead.notes || []);
+
+        document.getElementById('leadDossierModal').classList.add('active');
+      } catch (err) {
+        console.error('Failed to open dossier:', err);
+      }
+    }
+
+    function renderDossierNotes(notes) {
+      const container = document.getElementById('dossierNotesList');
+      if (!notes.length) {
+        container.innerHTML = `<div style="font-size: 12px; color: var(--color-warm-gray);">No internal notes yet. Add one below.</div>`;
+        return;
+      }
+      container.innerHTML = notes.map(n => `
+        <div style="background: var(--color-offwhite); padding: 10px 14px; border-left: 3px solid var(--color-gold); font-size: 12px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <strong style="color: var(--color-charcoal);">${n.staff_name || 'Advisor'}</strong>
+            <span style="font-size: 10px; color: var(--color-warm-gray);">${new Date(n.created_at).toLocaleDateString()}</span>
+          </div>
+          <div>${n.note_text}</div>
+        </div>
+      `).join('');
+    }
+
+    async function submitDossierNote() {
+      const input = document.getElementById('newNoteInput');
+      const text = input.value.trim();
+      if (!text || !currentDossierLead) return;
+
+      try {
+        const res = await fetch(`/api/admin/leads/${currentDossierLead.id}/notes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ staff_id: currentUser.id, staff_name: currentUser.name, note_text: text })
+        });
+        const data = await res.json();
+        input.value = '';
+        currentDossierLead.notes.unshift(data.note);
+        renderDossierNotes(currentDossierLead.notes);
+      } catch (err) {
+        console.error('Failed to submit note:', err);
+      }
+    }
+
+    async function updateDossierStage() {
+      const newStage = document.getElementById('dossierStageSelect').value;
+      if (!currentDossierLead) return;
+      if (newStage === 'Won') {
+        promptWonSale(currentDossierLead.id);
+        return;
+      }
+      await applyStageChange(currentDossierLead.id, newStage);
+    }
+
+    async function reassignDossierAgent() {
+      const newAgentId = document.getElementById('dossierAgentSelect').value;
+      if (!currentDossierLead) return;
+      try {
+        await fetch(`/api/admin/leads/${currentDossierLead.id}/assign`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agent_id: newAgentId })
+        });
+        alert('Lead reassigned successfully.');
+      } catch (err) {
+        console.error('Reassign failed:', err);
+      }
+    }
+
+    function closeDossierModal() {
+      document.getElementById('leadDossierModal').classList.remove('active');
+      currentDossierLead = null;
+    }
+
+    // =========================================================================
+    // VIEWINGS SCHEDULE (Requirement 5)
+    // =========================================================================
+    async function loadViewings() {
+      try {
+        const res = await fetch(`/api/admin/viewings?user_id=${currentUser.id}&user_role=${currentUser.role}`);
+        const viewings = await res.json();
+        const tbody = document.getElementById('viewingsTableFull');
+        tbody.innerHTML = viewings.map(v => `
+          <tr>
+            <td>#${v.id}</td>
+            <td><strong>${v.viewing_date}</strong></td>
+            <td>${v.viewing_time}</td>
+            <td>${v.property_title}</td>
+            <td><strong>${v.client_name}</strong></td>
+            <td>${v.client_phone}</td>
+            <td>${v.agent_name}</td>
+            <td><span class="admin-badge badge-viewing">${v.status}</span></td>
+            <td style="font-size: 11.5px; color: var(--color-warm-gray);">${v.feedback || '-'}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load viewings:', err);
+      }
+    }
+
+    // =========================================================================
+    // LEADERBOARD & STALE LEADS (Requirement 5)
+    // =========================================================================
+    async function loadLeaderboardAndStale() {
+      // 1. Leaderboard
+      try {
+        const res = await fetch('/api/admin/leaderboard');
+        const board = await res.json();
+        document.getElementById('leaderboardContainer').innerHTML = board.map((a, idx) => `
+          <div style="background: var(--color-offwhite); padding: 18px; margin-bottom: 14px; border: 1px solid var(--color-border-subtle);">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+              <div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--color-gold);">#${idx + 1}</span>
+                <strong style="font-size: 15px; margin-left: 6px;">${a.name}</strong>
+              </div>
+              <span style="font-size: 12px; font-weight: 600; color: var(--color-charcoal);">${a.deals_count} Deals Closed</span>
+            </div>
+            <div style="font-size: 12px; color: var(--color-warm-gray); margin-bottom: 8px;">
+              Volume: <strong>AED ${(a.volume_aed / 1000000).toFixed(1)}M</strong> &bull; Target: AED ${(a.target_aed / 1000000).toFixed(1)}M &bull; 
+              Commission: <span style="color: var(--color-gold); font-weight: 600;">AED ${Math.round(a.commission_aed).toLocaleString('en-US')}</span>
+            </div>
+            <div style="height: 8px; background: #ddd; position: relative;">
+              <div style="height: 100%; width: ${Math.min(100, a.target_pct)}%; background: var(--color-gold);"></div>
+            </div>
+            <div style="text-align: right; font-size: 10px; color: var(--color-warm-gray); margin-top: 4px;">
+              ${a.target_pct}% of Target Achieved
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Leaderboard error:', err);
+      }
+
+      // 2. Stale Leads (3+ Days Inactive)
+      try {
+        const sRes = await fetch(`/api/admin/stale-leads?user_id=${currentUser.id}&user_role=${currentUser.role}`);
+        const stales = await sRes.json();
+        const container = document.getElementById('staleLeadsContainer');
+        if (!stales.length) {
+          container.innerHTML = `<div style="font-size: 13px; color: #2e7d32; padding: 20px; background: #e8f5e9; text-align: center;">All leads are active and followed up within 3 days.</div>`;
+          return;
+        }
+
+        container.innerHTML = stales.map(s => `
+          <div style="background: #fff; border-left: 4px solid #c62828; border: 1px solid var(--color-border-subtle); padding: 14px; margin-bottom: 12px; cursor: pointer;" onclick="openLeadDossier(${s.id})">
+            <div style="display: flex; justify-content: space-between;">
+              <strong>${s.full_name}</strong>
+              <span style="font-size: 10.5px; background: #ffebee; color: #c62828; padding: 2px 6px; font-weight: 700;">
+                ${s.days_inactive} DAYS INACTIVE
+              </span>
+            </div>
+            <div style="font-size: 11.5px; color: var(--color-warm-gray); margin-top: 4px;">
+              Stage: ${s.stage} &bull; Budget: ${s.budget_aed || 'Confidential'} &bull; Agent: ${s.agent_name}
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Stale leads error:', err);
+      }
+    }
+
+    // =========================================================================
+    // INVENTORY MANAGER: ADD, EDIT, REMOVE (Requirement 5)
+    // =========================================================================
+    async function loadInventory() {
+      try {
+        const res = await fetch('/api/properties');
+        const props = await res.json();
+        const tbody = document.getElementById('inventoryPropertiesTable');
+        tbody.innerHTML = props.map(p => `
+          <tr>
+            <td><strong>${p.title}</strong></td>
+            <td>${p.property_type}</td>
+            <td>${p.community}</td>
+            <td><strong>AED ${Number(p.price_aed).toLocaleString('en-US')}</strong></td>
+            <td>${p.bedrooms} Beds</td>
+            <td>${p.built_up_sqft.toLocaleString('en-US')} Sq.Ft.</td>
+            <td><span class="admin-badge ${p.status === 'Sold' ? 'badge-closed' : 'badge-new'}">${p.status}</span></td>
+            <td>
+              <button class="btn btn-sm btn-charcoal-outline" style="padding: 4px 8px; font-size: 9px;" onclick="deletePropertyItem(${p.id})">Remove</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load inventory:', err);
+      }
+    }
+
+    function openAddPropertyModal() {
+      document.getElementById('addPropertyModal').classList.add('active');
+    }
+    function closeAddPropertyModal() {
+      document.getElementById('addPropertyModal').classList.remove('active');
+    }
+
+    async function submitNewProperty(e) {
+      e.preventDefault();
+      const payload = {
+        title: document.getElementById('npTitle').value,
+        property_type: document.getElementById('npType').value,
+        community: document.getElementById('npCommunity').value,
+        price_aed: document.getElementById('npPrice').value,
+        built_up_sqft: document.getElementById('npSqft').value,
+        bedrooms: document.getElementById('npBeds').value,
+        bathrooms: document.getElementById('npBaths').value,
+        description: document.getElementById('npDesc').value
+      };
+
+      try {
+        const res = await fetch('/api/properties', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        closeAddPropertyModal();
+        alert('Property added to portfolio successfully!');
+        loadInventory();
+      } catch (err) {
+        console.error('Failed to add property:', err);
+      }
+    }
+
+    async function deletePropertyItem(id) {
+      if (!confirm('Are you sure you want to remove this residence from the portfolio?')) return;
+      try {
+        await fetch(`/api/properties/${id}`, { method: 'DELETE' });
+        loadInventory();
+      } catch (err) {
+        console.error('Delete failed:', err);
+      }
+    }
+  </script>
+</body>
+</html>

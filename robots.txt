@@ -1,0 +1,26 @@
+User-agent: *
+# Confidential Administrative Enclaves & Staff Endpoints (Hidden from Spiders)
+Disallow: /admin.html
+Disallow: /login.html
+Disallow: /api/admin/
+Disallow: /api/auth/
+Disallow: /db/
+Disallow: /.env
+Disallow: /server.js
+Disallow: /package.json
+Disallow: /package-lock.json
+
+# Public Residential Portfolios & Advisory Pages
+Allow: /
+Allow: /properties.html
+Allow: /off-plan.html
+Allow: /mortgage.html
+Allow: /sell.html
+Allow: /about.html
+Allow: /contact.html
+Allow: /css/
+Allow: /js/
+Allow: /assets/
+
+# XML Sitemap
+Sitemap: https://trickyrealestate.ae/sitemap.xml

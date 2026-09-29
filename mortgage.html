@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dubai Mortgage &amp; Upfront Acquisition Calculator | Tricky Real Estate</title>
+  <meta name="description" content="Calculate monthly mortgage installments and estimated upfront acquisition costs for ready and off-plan properties in Dubai. Prices in AED.">
+  <meta name="keywords" content="Dubai mortgage calculator, DLD transfer fees, property purchase costs Dubai, UAE home finance, Dubai upfront costs calculator">
+  <link rel="canonical" href="https://trickyrealestate.ae/mortgage.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://trickyrealestate.ae/mortgage.html">
+  <meta property="og:title" content="Dubai Mortgage &amp; Upfront Acquisition Calculator | Tricky Real Estate">
+  <meta property="og:description" content="Calculate monthly mortgage repayments and exact DLD upfront costs for luxury Dubai homes.">
+  <meta property="og:image" content="https://trickyrealestate.ae/assets/images/penthouse.jpg">
+  <meta property="og:site_name" content="Tricky Real Estate">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Dubai Mortgage Calculator | Tricky Real Estate">
+  <meta name="twitter:description" content="Calculate monthly repayments and estimated upfront purchase costs in AED.">
+  <meta name="twitter:image" content="https://trickyrealestate.ae/assets/images/penthouse.jpg">
+
+  <!-- Google Fonts: Cormorant Garamond & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .page-hero {
+      background-color: var(--color-charcoal-dark);
+      color: var(--color-white);
+      padding: 160px 0 70px 0;
+      text-align: center;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Site Header -->
+  <header class="site-header scrolled" id="mainHeader">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-logo logo-charcoal" id="brandLogo">
+        <span class="logo-tricky">Tricky</span>
+        <span class="logo-divider"></span>
+        <span class="logo-sub">REAL ESTATE</span>
+      </a>
+
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="properties.html">Properties</a></li>
+          <li><a href="off-plan.html">Off-Plan</a></li>
+          <li><a href="mortgage.html" style="color: var(--color-gold);">Mortgage Calculator</a></li>
+          <li><a href="sell.html">Sell</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-cta">
+        <a href="#advisor-form" class="btn btn-nav btn-charcoal-solid">Speak To Advisor</a>
+      </div>
+
+      <button class="mobile-toggle" aria-label="Toggle navigation menu" id="mobileToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="brand-logo logo-white" style="margin-bottom: 30px;">
+      <span class="logo-tricky" style="font-size: 32px;">Tricky</span>
+      <span class="logo-divider" style="width: 60px;"></span>
+      <span class="logo-sub" style="font-size: 10px;">REAL ESTATE</span>
+    </div>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="properties.html">Properties</a></li>
+      <li><a href="off-plan.html">Off-Plan</a></li>
+      <li><a href="mortgage.html">Mortgage Calculator</a></li>
+      <li><a href="sell.html">Sell</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </div>
+
+  <!-- Page Hero -->
+  <div class="page-hero">
+    <div class="container">
+      <span class="section-label">FINANCIAL STRUCTURING</span>
+      <h1 class="section-heading white">Dubai Mortgage &amp; Upfront Costs Calculator</h1>
+      <div class="thin-gold-line center"></div>
+      <p class="section-desc white centered">
+        Accurately evaluate monthly commitments and full cash upfront requirements under UAE Central Bank and Dubai Land Department regulations.
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Calculator Section -->
+  <section class="section-padding bg-white">
+    <div class="container">
+      
+      <div class="calculator-box" style="margin-top: 0;">
+        <!-- Left: Sliders -->
+        <div class="calc-inputs">
+          <span class="section-label" style="margin-bottom: 4px;">LOAN PARAMETERS</span>
+          <h3 style="font-family: var(--font-serif); font-size: 28px; font-weight: 300; margin-bottom: 24px;">Configure Your Acquisition</h3>
+
+          <div class="calc-group">
+            <div class="calc-label-row">
+              <span class="calc-label">Property Purchase Price (AED)</span>
+              <span class="calc-value-display" id="cPriceDisplay">AED 8,500,000</span>
+            </div>
+            <input type="range" class="calc-slider" id="cPriceSlider" min="1000000" max="60000000" step="250000" value="8500000">
+          </div>
+
+          <div class="calc-group">
+            <div class="calc-label-row">
+              <span class="calc-label">Down Payment (%)</span>
+              <span class="calc-value-display" id="cDownDisplay">20% (AED 1,700,000)</span>
+            </div>
+            <input type="range" class="calc-slider" id="cDownSlider" min="20" max="50" step="5" value="20">
+          </div>
+
+          <div class="calc-group">
+            <div class="calc-label-row">
+              <span class="calc-label">Loan Duration</span>
+              <span class="calc-value-display" id="cTermDisplay">25 Years</span>
+            </div>
+            <input type="range" class="calc-slider" id="cTermSlider" min="5" max="25" step="1" value="25">
+          </div>
+
+          <div class="calc-group">
+            <div class="calc-label-row">
+              <span class="calc-label">Interest Rate (% Annual)</span>
+              <span class="calc-value-display" id="cRateDisplay">4.25%</span>
+            </div>
+            <input type="range" class="calc-slider" id="cRateSlider" min="2.5" max="8.0" step="0.25" value="4.25">
+          </div>
+
+          <!-- Quick Presets -->
+          <div style="margin-top: 10px;">
+            <span style="font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-warm-gray); display: block; margin-bottom: 10px;">
+              Quick Tier Presets:
+            </span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-sm btn-charcoal-outline" onclick="setPreset(2450000, 20)">JVC Townhouse (AED 2.45M)</button>
+              <button class="btn btn-sm btn-charcoal-outline" onclick="setPreset(7800000, 20)">Downtown Opera (AED 7.8M)</button>
+              <button class="btn btn-sm btn-charcoal-outline" onclick="setPreset(28500000, 25)">Marina Penthouse (AED 28.5M)</button>
+              <button class="btn btn-sm btn-charcoal-outline" onclick="setPreset(54000000, 30)">Palm Villa (AED 54M)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Monthly Results Card -->
+        <div class="calc-results-card">
+          <div class="calc-result-main">
+            <div class="calc-monthly-label">Estimated Monthly Installment</div>
+            <div class="calc-monthly-amount">
+              <span id="cMonthlyPayment">36,876</span>
+              <span class="currency">AED / mo</span>
+            </div>
+          </div>
+
+          <ul class="calc-breakdown-list">
+            <li class="calc-breakdown-item">
+              <span class="item-title">Principal Mortgage Amount</span>
+              <span class="item-val" id="cLoanAmount">AED 6,800,000</span>
+            </li>
+            <li class="calc-breakdown-item">
+              <span class="item-title">Total Interest (Full Tenure)</span>
+              <span class="item-val" id="cTotalInterest">AED 4,262,800</span>
+            </li>
+            <li class="calc-breakdown-item">
+              <span class="item-title">Total Repayment Amount</span>
+              <span class="item-val" id="cTotalRepayment">AED 11,062,800</span>
+            </li>
+            <li class="calc-breakdown-item">
+              <span class="item-title">Down Payment Equity</span>
+              <span class="item-val" id="cDownPaymentVal">AED 1,700,000</span>
+            </li>
+          </ul>
+
+          <a href="#advisor-form" class="btn btn-gold-solid" style="width: 100%;">
+            Speak To Our Mortgage Advisor
+          </a>
+        </div>
+      </div>
+
+      <!-- ======================================================================
+           ESTIMATED UPFRONT COSTS BREAKDOWN TABLE
+           ====================================================================== -->
+      <div class="upfront-costs-card">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <span class="section-label" style="margin-bottom: 4px;">PURCHASE CLOSING FEES</span>
+            <h3 style="font-family: var(--font-serif); font-size: 28px; font-weight: 300;">
+              Estimated Upfront Cash Outlay
+            </h3>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-warm-gray);">Total Upfront Cash Required</span>
+            <div style="font-family: var(--font-serif); font-size: 32px; color: var(--color-charcoal); font-weight: 400;" id="totalUpfrontDisplay">
+              AED 2,246,450
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size: 13px; color: var(--color-warm-gray); margin-top: 10px; max-width: 800px;">
+          The estimated breakdown below illustrates all statutory fees, conveyance trustee charges, brokerage fees, and mortgage registration duties mandatory in the Emirate of Dubai.
+        </p>
+
+        <table class="upfront-table">
+          <tr>
+            <td>Initial Down Payment Equity</td>
+            <td id="ufDownPayment">AED 1,700,000</td>
+          </tr>
+          <tr>
+            <td>Dubai Land Department (DLD) Transfer Fee (4% of Purchase Price)</td>
+            <td id="ufDldFee">AED 340,000</td>
+          </tr>
+          <tr>
+            <td>DLD Registration Trustee Admin Fee (+ 5% VAT)</td>
+            <td id="ufTrusteeFee">AED 4,200</td>
+          </tr>
+          <tr>
+            <td>Real Estate Brokerage Advisory Fee (2% of Purchase Price)</td>
+            <td id="ufAgencyFee">AED 170,000</td>
+          </tr>
+          <tr>
+            <td>VAT on Real Estate Brokerage Advisory Fee (5%)</td>
+            <td id="ufVatAgency">AED 8,500</td>
+          </tr>
+          <tr>
+            <td>Mortgage Registration Fee to DLD (0.25% of loan + AED 290)</td>
+            <td id="ufMortgageReg">AED 17,290</td>
+          </tr>
+          <tr>
+            <td>Bank Property Valuation &amp; Title Verification (+ 5% VAT)</td>
+            <td id="ufValuationFee">AED 3,150</td>
+          </tr>
+          <tr class="total-row">
+            <td>Estimated Total Cash Required Upfront</td>
+            <td id="ufTotalOutlay" style="color: var(--color-gold); font-size: 18px;">AED 2,243,140</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- ======================================================================
+           SPEAK TO AN ADVISOR FORM (No email sending, spam protected)
+           ====================================================================== -->
+      <div style="margin-top: 70px;" id="advisor-form">
+        <div class="contact-grid">
+          <div class="contact-info-panel">
+            <span class="section-label">INDEPENDENT MORTGAGE BROKERAGE</span>
+            <h2 class="section-heading">Speak To Our Private Client Advisor</h2>
+            <div class="thin-gold-line"></div>
+            <p class="section-desc">
+              Tricky Real Estate works directly with all major UAE and international private banks to secure preferential mortgage rates, non-resident borrowing lines, and rapid pre-approvals.
+            </p>
+
+            <div class="contact-channels">
+              <div class="contact-channel-item">
+                <span class="contact-channel-label">Mortgage Advisory Line</span>
+                <span class="contact-channel-val">+971 4 800 8742</span>
+              </div>
+              <div class="contact-channel-item">
+                <span class="contact-channel-label">Turnaround Time</span>
+                <span class="contact-channel-val">Within 24 Hours</span>
+                <span style="font-size: 12px; color: var(--color-warm-gray); margin-top: 4px;">Institutional pre-approval letter delivered within 3 working days.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="contact-form">
+            <form id="mortgageAdvisorForm">
+              <input type="text" name="website_url" class="hp-field" tabindex="-1" autocomplete="off">
+              <input type="hidden" name="form_start_time" class="form-start-time">
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Full Name *</label>
+                  <input type="text" name="full_name" required placeholder="Lord / Sheikh / Full Name">
+                </div>
+                <div class="form-group">
+                  <label>Phone / WhatsApp *</label>
+                  <input type="tel" name="phone" required placeholder="+971 50 123 4567">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Email Address *</label>
+                  <input type="email" name="email" required placeholder="client@domain.com">
+                </div>
+                <div class="form-group">
+                  <label>Investor Status</label>
+                  <select name="lead_type">
+                    <option value="Mortgage Consultation (UAE Resident)">UAE Resident (Salaried / Business)</option>
+                    <option value="Mortgage Consultation (Non-Resident)">International / Non-Resident Investor</option>
+                    <option value="Mortgage Consultation (HNWI / Family Office)">HNWI / Private Family Office</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Target Property Value (AED)</label>
+                  <select name="budget_aed" id="formBudgetSelect">
+                    <option value="AED 2M - 5M">AED 2,000,000 &ndash; AED 5,000,000</option>
+                    <option value="AED 5M - 15M" selected>AED 5,000,000 &ndash; AED 15,000,000</option>
+                    <option value="AED 15M - 30M">AED 15,000,000 &ndash; AED 30,000,000</option>
+                    <option value="AED 30M+">AED 30,000,000+ (Ultra-Prime)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Preferred Bank / Financing Goal</label>
+                  <input type="text" name="message" placeholder="e.g. Lowest fixed rate, non-resident loan">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-gold-solid" style="width: 100%; margin-top: 10px;">
+                Request Confidential Mortgage Consultation
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <a href="index.html" class="brand-logo logo-white">
+          <span class="logo-tricky">Tricky</span>
+          <span class="logo-divider"></span>
+          <span class="logo-sub">REAL ESTATE</span>
+        </a>
+      </div>
+      <div class="footer-bottom">
+        <div>&copy; 2026 Tricky Real Estate. Prices quoted in UAE Dirhams (AED).</div>
+        <div><a href="login.html" rel="nofollow">Staff Access</a> &bull; <a href="contact.html">Private Office</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/shared.js"></script>
+  <script>
+    const pSlider = document.getElementById('cPriceSlider');
+    const pDisplay = document.getElementById('cPriceDisplay');
+    const dSlider = document.getElementById('cDownSlider');
+    const dDisplay = document.getElementById('cDownDisplay');
+    const tSlider = document.getElementById('cTermSlider');
+    const tDisplay = document.getElementById('cTermDisplay');
+    const rSlider = document.getElementById('cRateSlider');
+    const rDisplay = document.getElementById('cRateDisplay');
+
+    function fmtAED(num) {
+      return 'AED ' + Math.round(num).toLocaleString('en-US');
+    }
+
+    function calculate() {
+      const price = parseFloat(pSlider.value);
+      const downPct = parseFloat(dSlider.value);
+      const termYears = parseFloat(tSlider.value);
+      const annualRate = parseFloat(rSlider.value);
+
+      const downPayment = price * (downPct / 100);
+      const loanAmount = price - downPayment;
+      const monthlyRate = (annualRate / 100) / 12;
+      const numMonths = termYears * 12;
+
+      let monthlyPayment = 0;
+      if (monthlyRate > 0) {
+        monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numMonths)) / (Math.pow(1 + monthlyRate, numMonths) - 1);
+      } else {
+        monthlyPayment = loanAmount / numMonths;
+      }
+
+      const totalRepaid = monthlyPayment * numMonths;
+      const totalInterest = totalRepaid - loanAmount;
+
+      // Upfront Costs
+      const dldFee = price * 0.04;
+      const trusteeFee = 4200; // 4000 + 5% VAT
+      const agencyFee = price * 0.02;
+      const vatAgency = agencyFee * 0.05;
+      const mortgageReg = (loanAmount * 0.0025) + 290;
+      const valuationFee = 3150; // 3000 + 5% VAT
+      const totalUpfront = downPayment + dldFee + trusteeFee + agencyFee + vatAgency + mortgageReg + valuationFee;
+
+      // Update Labels
+      pDisplay.textContent = fmtAED(price);
+      dDisplay.textContent = `${downPct}% (${fmtAED(downPayment)})`;
+      tDisplay.textContent = `${termYears} Years`;
+      rDisplay.textContent = `${annualRate.toFixed(2)}%`;
+
+      // Update Monthly Box
+      document.getElementById('cMonthlyPayment').textContent = Math.round(monthlyPayment).toLocaleString('en-US');
+      document.getElementById('cLoanAmount').textContent = fmtAED(loanAmount);
+      document.getElementById('cTotalInterest').textContent = fmtAED(totalInterest);
+      document.getElementById('cTotalRepayment').textContent = fmtAED(totalRepaid);
+      document.getElementById('cDownPaymentVal').textContent = fmtAED(downPayment);
+
+      // Update Upfront Table
+      document.getElementById('ufDownPayment').textContent = fmtAED(downPayment);
+      document.getElementById('ufDldFee').textContent = fmtAED(dldFee);
+      document.getElementById('ufTrusteeFee').textContent = fmtAED(trusteeFee);
+      document.getElementById('ufAgencyFee').textContent = fmtAED(agencyFee);
+      document.getElementById('ufVatAgency').textContent = fmtAED(vatAgency);
+      document.getElementById('ufMortgageReg').textContent = fmtAED(mortgageReg);
+      document.getElementById('ufValuationFee').textContent = fmtAED(valuationFee);
+      document.getElementById('ufTotalOutlay').textContent = fmtAED(totalUpfront);
+      document.getElementById('totalUpfrontDisplay').textContent = fmtAED(totalUpfront);
+    }
+
+    function setPreset(price, down) {
+      pSlider.value = price;
+      dSlider.value = down;
+      calculate();
+    }
+
+    [pSlider, dSlider, tSlider, rSlider].forEach(s => s.addEventListener('input', calculate));
+    document.addEventListener('DOMContentLoaded', () => {
+      calculate();
+
+      // Form submit (NO EMAIL SENDING!)
+      const form = document.getElementById('mortgageAdvisorForm');
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          handleLuxuryFormSubmit(form, '/api/leads', 'Mortgage Advisor Request');
+        });
+      }
+    });
+  </script>
+</body>
+</html>

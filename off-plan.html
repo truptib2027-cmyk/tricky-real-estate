@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dubai Off-Plan Developments &amp; Investment Projects | Tricky Real Estate</title>
+  <meta name="description" content="Explore 6 visionary off-plan projects across Dubai with developer milestone payment plans, guaranteed handover dates, and high net yields. Prices in AED.">
+  <meta name="keywords" content="Dubai off plan projects, Dubai pre-construction, payment plan properties Dubai, off plan villas Dubai, AED property investment">
+  <link rel="canonical" href="https://trickyrealestate.ae/off-plan.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://trickyrealestate.ae/off-plan.html">
+  <meta property="og:title" content="Dubai Off-Plan Developments &amp; Investment Projects | Tricky Real Estate">
+  <meta property="og:description" content="Explore visionary off-plan architectural developments with milestone payment plans and high yields in Dubai.">
+  <meta property="og:image" content="https://trickyrealestate.ae/assets/images/offplan_tower.jpg">
+  <meta property="og:site_name" content="Tricky Real Estate">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Dubai Off-Plan Developments | Tricky Real Estate">
+  <meta name="twitter:description" content="Prime off-plan architectural allocations in Dubai.">
+  <meta name="twitter:image" content="https://trickyrealestate.ae/assets/images/offplan_tower.jpg">
+
+  <!-- Google Fonts: Cormorant Garamond & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .page-hero {
+      background-color: var(--color-charcoal-dark);
+      color: var(--color-white);
+      padding: 160px 0 70px 0;
+      text-align: center;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Site Header -->
+  <header class="site-header scrolled" id="mainHeader">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-logo logo-charcoal" id="brandLogo">
+        <span class="logo-tricky">Tricky</span>
+        <span class="logo-divider"></span>
+        <span class="logo-sub">REAL ESTATE</span>
+      </a>
+
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="properties.html">Properties</a></li>
+          <li><a href="off-plan.html" style="color: var(--color-gold);">Off-Plan</a></li>
+          <li><a href="mortgage.html">Mortgage Calculator</a></li>
+          <li><a href="sell.html">Sell</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-cta">
+        <a href="contact.html" class="btn btn-nav btn-charcoal-solid">Register Interest</a>
+      </div>
+
+      <button class="mobile-toggle" aria-label="Toggle navigation menu" id="mobileToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="brand-logo logo-white" style="margin-bottom: 30px;">
+      <span class="logo-tricky" style="font-size: 32px;">Tricky</span>
+      <span class="logo-divider" style="width: 60px;"></span>
+      <span class="logo-sub" style="font-size: 10px;">REAL ESTATE</span>
+    </div>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="properties.html">Properties</a></li>
+      <li><a href="off-plan.html">Off-Plan</a></li>
+      <li><a href="mortgage.html">Mortgage Calculator</a></li>
+      <li><a href="sell.html">Sell</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </div>
+
+  <!-- Page Hero -->
+  <div class="page-hero">
+    <div class="container">
+      <span class="section-label">INSTITUTIONAL &amp; PRIVATE ALLOCATIONS</span>
+      <h1 class="section-heading white">Off-Plan Projects in Dubai</h1>
+      <div class="thin-gold-line center"></div>
+      <p class="section-desc white centered">
+        Secure priority early-stage pricing in 6 landmark developments with flexible milestone payment plans and handover from 2026 to 2028.
+      </p>
+    </div>
+  </div>
+
+  <!-- Off-Plan Projects Grid -->
+  <section class="section-padding bg-white">
+    <div class="container">
+      <div class="property-grid" id="offplanGrid">
+        <!-- Rendered via JS from database -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       DEDICATED OFF-PLAN PROJECT DETAIL MODAL / VIEW
+       With Payment Plan, Handover Date & "Download Brochure" Form
+       ========================================================================== -->
+  <div class="modal-overlay" id="projectDetailModal">
+    <div class="modal-container" style="max-width: 960px;">
+      <button class="modal-close-btn" aria-label="Close modal">&times;</button>
+      <div class="modal-body" style="padding: 40px;">
+        
+        <div class="property-modal-grid">
+          <!-- Left Visual & Milestones -->
+          <div>
+            <div class="modal-image-gallery">
+              <img src="" id="projModalImg" alt="Project Render">
+            </div>
+
+            <!-- Milestone Visualizer -->
+            <div style="margin-top: 24px; background: var(--color-offwhite); padding: 24px; border: 1px solid var(--color-border-subtle);">
+              <span class="section-label" style="margin-bottom: 6px;">STRUCTURED PAYMENT PLAN</span>
+              <h4 id="projModalPlanName" style="font-family: var(--font-serif); font-size: 20px; margin-bottom: 16px;">60/40 Construction Plan</h4>
+              
+              <div class="plan-milestones" style="background: transparent;">
+                <div class="milestone" style="background: var(--color-offwhite);">
+                  <div class="milestone-dot"></div>
+                  <div class="milestone-percent" id="projDownPct" style="color: var(--color-charcoal);">20%</div>
+                  <div class="milestone-title">Down Payment</div>
+                </div>
+                <div class="milestone" style="background: var(--color-offwhite);">
+                  <div class="milestone-dot"></div>
+                  <div class="milestone-percent" id="projConstPct" style="color: var(--color-charcoal);">40%</div>
+                  <div class="milestone-title">During Build</div>
+                </div>
+                <div class="milestone" style="background: var(--color-offwhite);">
+                  <div class="milestone-dot"></div>
+                  <div class="milestone-percent" id="projHandPct" style="color: var(--color-charcoal);">40%</div>
+                  <div class="milestone-title">On Handover</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+              <div style="padding: 16px; border: 1px solid var(--color-border-subtle); text-align: center;">
+                <span style="font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-warm-gray); display: block;">Handover Date</span>
+                <strong id="projModalHandover" style="font-family: var(--font-serif); font-size: 20px; color: var(--color-charcoal);">Q4 2026</strong>
+              </div>
+              <div style="padding: 16px; border: 1px solid var(--color-border-subtle); text-align: center;">
+                <span style="font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-warm-gray); display: block;">Projected Net Yield</span>
+                <strong id="projModalRoi" style="font-family: var(--font-serif); font-size: 20px; color: var(--color-gold);">8.4%</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Details & Download Brochure Form -->
+          <div>
+            <span class="section-label" id="projModalDeveloper">DEVELOPER ALLOCATION</span>
+            <h2 class="section-heading" id="projModalTitle" style="font-size: 34px; margin-bottom: 6px;">The Aurelia Residences</h2>
+            <div class="property-meta" id="projModalPrice" style="color: var(--color-gold); font-size: 14px; margin-bottom: 16px;">
+              Starting From AED 6,200,000
+            </div>
+            <div class="thin-gold-line"></div>
+
+            <p id="projModalDesc" style="font-size: 13.5px; color: var(--color-warm-gray); line-height: 1.7; margin-bottom: 24px;"></p>
+
+            <table class="modal-specs-table">
+              <tr>
+                <td>Community</td>
+                <td id="projModalCommunity">-</td>
+              </tr>
+              <tr>
+                <td>Configurations</td>
+                <td id="projModalBeds">-</td>
+              </tr>
+              <tr>
+                <td>Master Developer</td>
+                <td id="projModalDevName">-</td>
+              </tr>
+              <tr>
+                <td>UAE Golden Visa</td>
+                <td style="color: var(--color-gold); font-weight: 600;">Eligible (10-Year)</td>
+              </tr>
+            </table>
+
+            <!-- Download Brochure Form (NO EMAIL SENDING!) -->
+            <div style="margin-top: 24px; background: var(--color-offwhite); padding: 24px; border: 1px solid var(--color-border-subtle);">
+              <span class="section-label" style="margin-bottom: 4px;">OFFICIAL DOSSIER &amp; FLOORPLANS</span>
+              <h4 style="font-family: var(--font-serif); font-size: 22px; font-weight: 300; margin-bottom: 14px;">
+                Download Project Brochure
+              </h4>
+
+              <form id="brochureForm">
+                <input type="hidden" name="project_id" id="bProjId">
+                <input type="text" name="website_url" class="hp-field" tabindex="-1" autocomplete="off">
+                <input type="hidden" name="form_start_time" class="form-start-time">
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label>Full Name *</label>
+                  <input type="text" name="full_name" required placeholder="Lord / Sheikh / Full Name">
+                </div>
+
+                <div class="form-row" style="margin-bottom: 12px;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label>Email Address *</label>
+                    <input type="email" name="email" required placeholder="investor@domain.com">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label>Phone / WhatsApp *</label>
+                    <input type="tel" name="phone" required placeholder="+971 50 123 4567">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-gold-solid" style="width: 100%; margin-top: 6px;">
+                  Download Complete Dossier &amp; Price List
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <a href="index.html" class="brand-logo logo-white">
+          <span class="logo-tricky">Tricky</span>
+          <span class="logo-divider"></span>
+          <span class="logo-sub">REAL ESTATE</span>
+        </a>
+      </div>
+      <div class="footer-bottom">
+        <div>&copy; 2026 Tricky Real Estate. Prices quoted in UAE Dirhams (AED).</div>
+        <div><a href="login.html" rel="nofollow">Staff Access</a> &bull; <a href="contact.html">Private Office</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/shared.js"></script>
+  <script>
+    let projectsData = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch('/api/projects');
+        projectsData = await res.json();
+        renderProjects(projectsData);
+      } catch (err) {
+        console.error('Failed to load off-plan projects:', err);
+      }
+
+      // Brochure form submit (NO EMAIL SENDING!)
+      const bForm = document.getElementById('brochureForm');
+      if (bForm) {
+        bForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          handleLuxuryFormSubmit(bForm, '/api/leads', 'Brochure Download', () => {
+            document.getElementById('projectDetailModal').classList.remove('active');
+            document.body.style.overflow = '';
+          });
+        });
+      }
+
+      // Modal close handlers
+      const modal = document.getElementById('projectDetailModal');
+      modal.querySelector('.modal-close-btn').addEventListener('click', () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    function renderProjects(projects) {
+      const grid = document.getElementById('offplanGrid');
+      grid.innerHTML = projects.map(p => `
+        <article class="property-card" onclick="openProjectModalById(${p.id})">
+          <div class="property-image-wrapper">
+            <img src="${p.image_url}" alt="${p.name}" loading="lazy">
+            <div class="property-badge off-plan">HANDOVER ${p.handover_date}</div>
+          </div>
+          <div class="property-content">
+            <div class="property-gold-line"></div>
+            <h3 class="property-name">${p.name}</h3>
+            <div class="property-meta">
+              ${p.community} &nbsp;&bull;&nbsp; <span class="property-price-highlight">From AED ${Number(p.starting_price_aed).toLocaleString('en-US')}</span>
+            </div>
+            <div style="font-size: 12px; color: var(--color-warm-gray); margin-bottom: 14px;">
+              ${p.payment_plan_summary}
+            </div>
+            <div class="property-specs">
+              <div class="property-spec-item"><span class="spec-val">${p.bedrooms_available}</span></div>
+              <div class="property-spec-item">&bull;</div>
+              <div class="property-spec-item"><span class="spec-val" style="color: var(--color-gold);">${p.roi_estimate}</span></div>
+              <div class="property-spec-item" style="margin-left: auto;">
+                <span class="btn btn-sm btn-gold-solid" style="padding: 6px 14px; font-size: 9px;">Brochure</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function openProjectModalById(id) {
+      const p = projectsData.find(proj => proj.id === id);
+      if (!p) return;
+
+      document.getElementById('projModalImg').src = p.image_url;
+      document.getElementById('projModalDeveloper').textContent = `${p.developer_name.toUpperCase()} • OFF-PLAN`;
+      document.getElementById('projModalTitle').textContent = p.name;
+      document.getElementById('projModalPrice').textContent = `Starting From AED ${Number(p.starting_price_aed).toLocaleString('en-US')}`;
+      document.getElementById('projModalDesc').textContent = p.description;
+
+      document.getElementById('projModalCommunity').textContent = p.community;
+      document.getElementById('projModalBeds').textContent = p.bedrooms_available;
+      document.getElementById('projModalDevName').textContent = p.developer_name;
+      document.getElementById('projModalHandover').textContent = p.handover_date;
+      document.getElementById('projModalRoi').textContent = p.roi_estimate;
+
+      document.getElementById('projModalPlanName').textContent = p.payment_plan_summary;
+      document.getElementById('projDownPct').textContent = `${p.down_payment_pct}%`;
+      document.getElementById('projConstPct').textContent = `${p.during_construction_pct}%`;
+      document.getElementById('projHandPct').textContent = `${p.on_handover_pct}%`;
+
+      document.getElementById('bProjId').value = p.id;
+
+      const modal = document.getElementById('projectDetailModal');
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  </script>
+</body>
+</html>
