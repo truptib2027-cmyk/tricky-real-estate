@@ -12,8 +12,16 @@ const db = require('./db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Universal Body Parser (Safe for Vercel Serverless pre-parsed requests and local Node)
+app.use((req, res, next) => {
+  if (req.body !== undefined && typeof req.body === 'object' && req.body !== null) {
+    return next();
+  }
+  express.json()(req, res, (err) => {
+    if (err) return next(err);
+    express.urlencoded({ extended: true })(req, res, next);
+  });
+});
 
 // -----------------------------------------------------------------------------
 // Security Guard: Prevent direct web access to sensitive source code, keys & database
@@ -407,12 +415,12 @@ app.use((req, res) => {
 // -----------------------------------------------------------------------------
 app.use((err, req, res, next) => {
   console.error('[UNHANDLED SERVER ERROR]', err);
-  if (req.accepts('html')) {
+  if (req.accepts('html') && !req.path.startsWith('/api/')) {
     const pub500 = path.join(__dirname, 'public', '500.html');
     if (fs.existsSync(pub500)) return res.status(500).sendFile(pub500);
     return res.status(500).sendFile(path.join(__dirname, '500.html'));
   }
-  res.status(500).json({ error: 'Internal server error occurred.' });
+  res.status(500).json({ error: err.message || 'Internal server error occurred.' });
 });
 
 // Start Server
