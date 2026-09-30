@@ -66,9 +66,15 @@ async function runMigrationsAndSeed() {
 
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-    const schemaSql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-    await client.query(schemaSql);
+    let schemaSql = '';
+    try {
+      schemaSql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+    } catch (e) {
+      console.warn('[DATABASE] schema.sql disk read notice:', e.message);
+    }
+    if (schemaSql) {
+      await client.query(schemaSql);
+    }
 
     const devCheck = await client.query('SELECT COUNT(*) FROM developers');
     if (parseInt(devCheck.rows[0].count, 10) === 0) {

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Private Staff Login | Tricky Real Estate</title>
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  
+  <!-- Google Fonts: Cormorant Garamond & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background-color: var(--color-charcoal-dark);
+      color: var(--color-white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 20px;
+    }
+    .login-box {
+      width: 100%;
+      max-width: 480px;
+      background: #1a1a1a;
+      border: 1px solid rgba(184, 151, 90, 0.3);
+      padding: 48px 40px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+    }
+    .quick-creds {
+      margin-top: 30px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.6;
+    }
+    .cred-chip {
+      display: block;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      margin-top: 8px;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      font-family: monospace;
+      font-size: 11px;
+    }
+    .cred-chip:hover {
+      border-color: var(--color-gold);
+      background: rgba(184, 151, 90, 0.1);
+      color: var(--color-white);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Brand Logo -->
+  <a href="index.html" class="brand-logo logo-white" style="margin-bottom: 36px;">
+    <span class="logo-tricky" style="font-size: 32px;">Tricky</span>
+    <span class="logo-divider" style="width: 55px;"></span>
+    <span class="logo-sub" style="font-size: 10px;">REAL ESTATE</span>
+  </a>
+
+  <!-- Login Form Box -->
+  <div class="login-box">
+    <div class="text-center" style="margin-bottom: 28px;">
+      <span class="section-label">CONFIDENTIAL PORTAL</span>
+      <h2 style="font-family: var(--font-serif); font-size: 32px; font-weight: 300;">Staff &amp; Admin Sign In</h2>
+      <div class="thin-gold-line center"></div>
+      <p style="font-size: 13px; color: rgba(255, 255, 255, 0.6);">
+        Access private buyer dossiers, deal pipeline, and database records.
+      </p>
+    </div>
+
+    <form id="adminLoginForm">
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label style="color: rgba(255,255,255,0.7);">Staff Email *</label>
+        <input type="email" id="loginEmail" required placeholder="admin@trickyrealestate.ae" 
+               style="background: #242424; color: #fff; border-color: rgba(255,255,255,0.2);">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label style="color: rgba(255,255,255,0.7);">Password *</label>
+        <input type="password" id="loginPassword" required placeholder="••••••••••••" 
+               style="background: #242424; color: #fff; border-color: rgba(255,255,255,0.2);">
+      </div>
+
+      <div id="loginError" style="color: #ff6b6b; font-size: 12px; margin-bottom: 16px; display: none;"></div>
+
+      <button type="submit" class="btn btn-gold-solid" style="width: 100%;" id="loginSubmitBtn">
+        Authenticate Session
+      </button>
+    </form>
+
+    <!-- Quick Credentials for Testing -->
+    <div class="quick-creds">
+      <span style="letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-gold); font-weight: 600;">
+        Authorized Credentials (Click To Fill):
+      </span>
+
+      <!-- Master Admin -->
+      <div class="cred-chip" onclick="fillCreds('admin@trickyrealestate.ae', 'TrickyAdmin2026!')">
+        <strong style="color: var(--color-gold);">👑 Master Admin (Jay)</strong><br>
+        admin@trickyrealestate.ae &bull; <code>TrickyAdmin2026!</code><br>
+        <span style="font-size: 10px; color: rgba(255,255,255,0.5);">(Full visibility, all 40 leads, pipeline, CRUD)</span>
+      </div>
+
+      <!-- Agent Tariq -->
+      <div class="cred-chip" onclick="fillCreds('tariq@trickyrealestate.ae', 'Tariq2026!')">
+        <strong>Agent Tariq Al-Mansoor</strong><br>
+        tariq@trickyrealestate.ae &bull; <code>Tariq2026!</code><br>
+        <span style="font-size: 10px; color: rgba(255,255,255,0.5);">(Views only Tariq's assigned leads)</span>
+      </div>
+
+      <!-- Agent Elena -->
+      <div class="cred-chip" onclick="fillCreds('elena@trickyrealestate.ae', 'Elena2026!')">
+        <strong>Agent Elena Rostova</strong><br>
+        elena@trickyrealestate.ae &bull; <code>Elena2026!</code><br>
+        <span style="font-size: 10px; color: rgba(255,255,255,0.5);">(Views only Elena's assigned leads)</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 30px; font-size: 12px; color: rgba(255,255,255,0.4);">
+    <a href="index.html" style="color: rgba(255,255,255,0.6);">&larr; Return to Public Website</a>
+  </div>
+
+  <script>
+    function fillCreds(email, password) {
+      document.getElementById('loginEmail').value = email;
+      document.getElementById('loginPassword').value = password;
+      document.getElementById('loginError').style.display = 'none';
+    }
+
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const btn = document.getElementById('loginSubmitBtn');
+      const errBox = document.getElementById('loginError');
+
+      btn.disabled = true;
+      btn.textContent = 'AUTHENTICATING...';
+      errBox.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        btn.disabled = false;
+        btn.textContent = 'AUTHENTICATE SESSION';
+
+        if (!data.success || !data.user) {
+          errBox.textContent = data.error || 'Authentication failed. Please verify credentials.';
+          errBox.style.display = 'block';
+          return;
+        }
+
+        // Store session in localStorage
+        localStorage.setItem('trickyStaffSession', JSON.stringify(data.user));
+
+        // Redirect to admin portal
+        window.location.href = 'admin.html';
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'AUTHENTICATE SESSION';
+        errBox.textContent = 'Connection error. Please try again.';
+        errBox.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

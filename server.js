@@ -63,6 +63,7 @@ app.get('/sitemap.xml', (req, res) => {
   res.sendFile(path.join(__dirname, 'sitemap.xml'));
 });
 
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname)));
 
 // -----------------------------------------------------------------------------
@@ -394,6 +395,8 @@ app.delete('/api/projects/:id', async (req, res) => {
 // -----------------------------------------------------------------------------
 app.use((req, res) => {
   if (req.accepts('html')) {
+    const pub404 = path.join(__dirname, 'public', '404.html');
+    if (fs.existsSync(pub404)) return res.status(404).sendFile(pub404);
     return res.status(404).sendFile(path.join(__dirname, '404.html'));
   }
   res.status(404).json({ error: 'Endpoint or resource not found.' });
@@ -405,6 +408,8 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error('[UNHANDLED SERVER ERROR]', err);
   if (req.accepts('html')) {
+    const pub500 = path.join(__dirname, 'public', '500.html');
+    if (fs.existsSync(pub500)) return res.status(500).sendFile(pub500);
     return res.status(500).sendFile(path.join(__dirname, '500.html'));
   }
   res.status(500).json({ error: 'Internal server error occurred.' });
@@ -424,4 +429,11 @@ async function start() {
   });
 }
 
-start();
+// Check if running directly in Node or imported by Vercel serverless
+if (require.main === module) {
+  start();
+} else {
+  db.initDatabase().catch(err => console.error('[SERVERLESS DB INIT]', err.message));
+}
+
+module.exports = app;

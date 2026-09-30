@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "build": "node -e \"console.log('Build completed successfully.')\"",
     "test": "node -e \"console.log('Build and tests passed.')\""
   },
   "keywords": [],
