@@ -341,14 +341,7 @@ async function handleLuxuryFormSubmit(form, endpoint = '/api/leads', leadType = 
       submitBtn.textContent = originalText;
     }
     console.error('Submission error:', err);
-    const refNo = 'TRK-' + Math.floor(100000 + Math.random() * 900000);
-    showThankYouModal(
-      'Inquiry Confirmed',
-      'A Tricky Real Estate advisor will contact you within 24 hours.',
-      refNo
-    );
-    form.reset();
-    if (onSuccess) onSuccess();
+    alert('Transmission Error: We were unable to deliver your inquiry. Please check your internet connection or call our Private Client Desk directly at +971 4 800 8742.');
   }
 }
 

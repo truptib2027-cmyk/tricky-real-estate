@@ -606,7 +606,7 @@
         if (grid && data.length) {
           const featured = data.slice(0, 6);
           grid.innerHTML = featured.map(p => `
-            <article class="property-card" onclick="window.location.href='properties.html?id=${p.id}'">
+            <article class="property-card" tabindex="0" role="link" aria-label="${p.title}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); window.location.href='properties.html?id='+p.id;}" onclick="window.location.href='properties.html?id=${p.id}'">
               <div class="property-image-wrapper">
                 <img src="${p.image_url}" alt="${p.title}" loading="lazy">
                 <div class="property-badge">${p.community}</div>

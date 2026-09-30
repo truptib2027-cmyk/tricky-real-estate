@@ -754,22 +754,61 @@
     let currentDossierLead = null;
     let pendingWonLeadId = null;
 
+    // Secure HTML Entity Escaping (OWASP A03:2021 Stored XSS Remediation)
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Authenticated API Fetch Wrapper with Bearer Token (SEC-01 Remediation)
+    async function authFetch(url, options = {}) {
+      const token = localStorage.getItem('trickyStaffToken');
+      const headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
+      };
+      try {
+        const res = await fetch(url, { ...options, headers });
+        if (res.status === 401 || res.status === 403) {
+          console.warn('[AUTH] Session expired or unauthorized, redirecting to login');
+          logoutStaff();
+          return res;
+        }
+        return res;
+      } catch (err) {
+        console.error('[API ERROR]', err);
+        throw err;
+      }
+    }
+
     // Check Authentication on Page Load
     document.addEventListener('DOMContentLoaded', () => {
       const sessionStr = localStorage.getItem('trickyStaffSession');
-      if (!sessionStr) {
+      const token = localStorage.getItem('trickyStaffToken');
+      if (!sessionStr || !token) {
         window.location.href = 'login.html';
         return;
       }
 
-      currentUser = JSON.parse(sessionStr);
+      try {
+        currentUser = JSON.parse(sessionStr);
+      } catch (e) {
+        logoutStaff();
+        return;
+      }
+
       document.getElementById('currentUserName').textContent = currentUser.name;
       document.getElementById('currentUserRole').textContent = currentUser.role === 'admin' ? 'Master Admin' : 'Senior Advisor';
 
       // Load initial data
       loadDashboardData();
       loadNotifications();
-      // Auto-refresh notification bell every 60 seconds (Requirement 4)
+      // Auto-refresh notification bell every 60 seconds
       setInterval(loadNotifications, 60000);
 
       // Bell dropdown toggle
@@ -784,6 +823,7 @@
 
     function logoutStaff() {
       localStorage.removeItem('trickyStaffSession');
+      localStorage.removeItem('trickyStaffToken');
       window.location.href = 'login.html';
     }
 
@@ -801,10 +841,11 @@
       if (viewId === 'inventoryView') loadInventory();
     }
 
-    // Load Notifications (Requirement 4)
+    // Load Notifications
     async function loadNotifications() {
       try {
-        const res = await fetch(`/api/admin/notifications?user_id=${currentUser.id}&user_role=${currentUser.role}`);
+        const res = await authFetch('/api/admin/notifications');
+        if (!res.ok) return;
         const data = await res.json();
         const badge = document.getElementById('bellBadge');
         badge.textContent = data.unreadCount;
@@ -815,11 +856,11 @@
           list.innerHTML = data.recentLeads.map(l => `
             <div class="notif-item" onclick="openLeadDossier(${l.id})">
               <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <strong style="color: #fff;">${l.name}</strong>
-                <span class="score-badge ${l.label === 'HOT' ? 'score-hot' : l.label === 'WARM' ? 'score-warm' : 'score-cold'}">${l.label}</span>
+                <strong style="color: #fff;">${escapeHtml(l.name)}</strong>
+                <span class="score-badge ${l.label === 'HOT' ? 'score-hot' : l.label === 'WARM' ? 'score-warm' : 'score-cold'}">${escapeHtml(l.label)}</span>
               </div>
               <div style="font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px;">
-                ${l.form} &bull; Ref: ${l.ref}
+                ${escapeHtml(l.form)} &bull; Ref: ${escapeHtml(l.ref)}
               </div>
             </div>
           `).join('');
@@ -831,32 +872,37 @@
       }
     }
 
-    // Load Dashboard Metrics & Simple Charts (Requirement 5)
+    // Load Dashboard Metrics & Charts
     async function loadDashboardData() {
       try {
-        const res = await fetch(`/api/admin/leads?user_id=${currentUser.id}&user_role=${currentUser.role}`);
+        const res = await authFetch('/api/admin/leads');
+        if (!res.ok) return;
         leadsData = await res.json();
 
         // 1. New leads today
         const todayLeads = leadsData.filter(l => l.stage === 'New').length;
         document.getElementById('kpiNewLeads').textContent = todayLeads;
 
-        // 1b. Total Pipeline Value (Dynamically computed from active leads)
+        // 1b. Total Pipeline Value
         const totalDealValue = leadsData.reduce((sum, l) => sum + (parseFloat(l.budget_aed) || 0), 0);
         document.getElementById('kpiDealVolume').textContent = totalDealValue > 0 
           ? `AED ${(totalDealValue / 1000000).toFixed(1)}M` 
           : 'AED 0M';
 
         // 2. Viewings
-        const vRes = await fetch(`/api/admin/viewings?user_id=${currentUser.id}&user_role=${currentUser.role}`);
-        const vData = await vRes.json();
-        document.getElementById('kpiViewingsWeek').textContent = vData.length;
+        const vRes = await authFetch('/api/admin/viewings');
+        if (vRes.ok) {
+          const vData = await vRes.json();
+          document.getElementById('kpiViewingsWeek').textContent = vData.length;
+        }
 
         // 3. Sales & Commission
-        const sRes = await fetch('/api/admin/sales');
-        const sData = await sRes.json();
-        if (sData.totalCommissionAED) {
-          document.getElementById('kpiCommissionMonth').textContent = `AED ${Math.round(sData.totalCommissionAED).toLocaleString('en-US')}`;
+        const sRes = await authFetch('/api/admin/sales');
+        if (sRes.ok) {
+          const sData = await sRes.json();
+          if (sData.totalCommissionAED) {
+            document.getElementById('kpiCommissionMonth').textContent = `AED ${Math.round(sData.totalCommissionAED).toLocaleString('en-US')}`;
+          }
         }
 
         // Render Stage Chart
@@ -884,7 +930,7 @@
 
         document.getElementById('sourceChart').innerHTML = sourceKeys.map(k => `
           <div class="chart-bar-row">
-            <div class="chart-bar-label" title="${k}">${k.split(':')[0]} (${sources[k]})</div>
+            <div class="chart-bar-label" title="${escapeHtml(k)}">${escapeHtml(k.split(':')[0])} (${sources[k]})</div>
             <div class="chart-bar-track">
               <div class="chart-bar-fill" style="width: ${(sources[k] / maxSrc) * 100}%; background-color: var(--color-charcoal);"></div>
             </div>
@@ -897,7 +943,7 @@
     }
 
     // =========================================================================
-    // KANBAN BOARD & DRAG-AND-DROP (Requirement 5)
+    // KANBAN BOARD & DRAG-AND-DROP (With Stored XSS Neutralization)
     // =========================================================================
     function renderKanbanBoard() {
       const stages = ['New', 'Contacted', 'Viewing', 'Offer', 'Won', 'Lost'];
@@ -911,16 +957,16 @@
           <div class="kanban-card" draggable="true" ondragstart="handleDragStart(event, ${l.id})" onclick="openLeadDossier(${l.id})">
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
               <span class="score-badge ${l.score_label === 'HOT' ? 'score-hot' : l.score_label === 'WARM' ? 'score-warm' : 'score-cold'}">
-                ${l.score_label} ${l.score}
+                ${escapeHtml(l.score_label)} ${l.score}
               </span>
-              <span style="font-size: 10px; color: var(--color-warm-gray);">${l.reference_no}</span>
+              <span style="font-size: 10px; color: var(--color-warm-gray);">${escapeHtml(l.reference_no)}</span>
             </div>
-            <div class="kanban-card-title">${l.full_name}</div>
+            <div class="kanban-card-title">${escapeHtml(l.full_name)}</div>
             <div style="font-size: 11.5px; color: var(--color-warm-gray); margin-bottom: 6px;">
-              ${l.preferred_community || 'Dubai'} &bull; <strong style="color: var(--color-charcoal);">${l.budget_aed || 'Confidential'}</strong>
+              ${escapeHtml(l.preferred_community || 'Dubai')} &bull; <strong style="color: var(--color-charcoal);">${escapeHtml(l.budget_aed || 'Confidential')}</strong>
             </div>
             <div style="font-size: 10.5px; color: var(--color-gold);">
-              ${l.source_form ? l.source_form.split(':')[0] : 'Inquiry'}
+              ${escapeHtml(l.source_form ? l.source_form.split(':')[0] : 'Inquiry')}
             </div>
           </div>
         `).join('');
@@ -941,7 +987,6 @@
       const leadId = e.dataTransfer.getData('text/plain');
       if (!leadId) return;
 
-      // Requirement 5: When marked "Won", ask for sale price and compute 2% commission!
       if (newStage === 'Won') {
         promptWonSale(leadId);
         return;
@@ -952,14 +997,13 @@
 
     async function applyStageChange(leadId, newStage, extraData = {}) {
       try {
-        const res = await fetch(`/api/admin/leads/${leadId}/stage`, {
+        const res = await authFetch(`/api/admin/leads/${leadId}/stage`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ stage: newStage, staff_name: currentUser.name, ...extraData })
         });
         const data = await res.json();
         
-        // Update local state
         const lead = leadsData.find(l => String(l.id) === String(leadId));
         if (lead) lead.stage = newStage;
 
@@ -982,7 +1026,7 @@
 
     function updateCommissionPreview() {
       const price = parseFloat(document.getElementById('wonSalePrice').value) || 0;
-      const comm = price * 0.02; // Exactly 2% commission per prompt
+      const comm = price * 0.02;
       document.getElementById('wonCommissionPreview').textContent = `AED ${Math.round(comm).toLocaleString('en-US')}`;
     }
 
@@ -1002,11 +1046,12 @@
     }
 
     // =========================================================================
-    // LEADS DIRECTORY & EXCEL DOWNLOAD (Requirement 5)
+    // LEADS DIRECTORY (With Safe Escaping)
     // =========================================================================
     async function loadLeadsDirectory() {
       try {
-        const res = await fetch(`/api/admin/leads?user_id=${currentUser.id}&user_role=${currentUser.role}`);
+        const res = await authFetch('/api/admin/leads');
+        if (!res.ok) return;
         leadsData = await res.json();
         filterLeadsList();
       } catch (err) {
@@ -1023,10 +1068,10 @@
       let filtered = [...leadsData];
       if (q) {
         filtered = filtered.filter(l => 
-          l.full_name.toLowerCase().includes(q) ||
-          l.email.toLowerCase().includes(q) ||
-          l.phone.includes(q) ||
-          l.reference_no.toLowerCase().includes(q)
+          (l.full_name && l.full_name.toLowerCase().includes(q)) ||
+          (l.email && l.email.toLowerCase().includes(q)) ||
+          (l.phone && l.phone.includes(q)) ||
+          (l.reference_no && l.reference_no.toLowerCase().includes(q))
         );
       }
       if (st !== 'all') filtered = filtered.filter(l => l.stage === st);
@@ -1036,14 +1081,14 @@
       const tbody = document.getElementById('fullLeadsTable');
       tbody.innerHTML = filtered.map(l => `
         <tr onclick="openLeadDossier(${l.id})" style="cursor: pointer;">
-          <td><span class="score-badge ${l.score_label === 'HOT' ? 'score-hot' : l.score_label === 'WARM' ? 'score-warm' : 'score-cold'}">${l.score_label} ${l.score}</span></td>
-          <td><strong style="color: var(--color-gold);">${l.reference_no}</strong></td>
-          <td><strong>${l.full_name}</strong></td>
-          <td style="font-size: 11.5px; color: var(--color-warm-gray);">${l.phone}<br>${l.email}</td>
-          <td style="font-size: 11px;">${l.source_form || 'Web'}</td>
-          <td>${l.budget_aed || 'Confidential'}</td>
-          <td><span class="admin-badge badge-contacted">${l.stage}</span></td>
-          <td>${l.agent_name || 'Tariq Al-Mansoor'}</td>
+          <td><span class="score-badge ${l.score_label === 'HOT' ? 'score-hot' : l.score_label === 'WARM' ? 'score-warm' : 'score-cold'}">${escapeHtml(l.score_label)} ${l.score}</span></td>
+          <td><strong style="color: var(--color-gold);">${escapeHtml(l.reference_no)}</strong></td>
+          <td><strong>${escapeHtml(l.full_name)}</strong></td>
+          <td style="font-size: 11.5px; color: var(--color-warm-gray);">${escapeHtml(l.phone)}<br>${escapeHtml(l.email)}</td>
+          <td style="font-size: 11px;">${escapeHtml(l.source_form || 'Web')}</td>
+          <td>${escapeHtml(l.budget_aed || 'Confidential')}</td>
+          <td><span class="admin-badge badge-contacted">${escapeHtml(l.stage)}</span></td>
+          <td>${escapeHtml(l.agent_name || 'Tariq Al-Mansoor')}</td>
           <td>
             <button class="btn btn-sm btn-gold-solid" style="padding: 4px 10px; font-size: 9px;">Dossier</button>
           </td>
@@ -1051,24 +1096,24 @@
       `).join('');
     }
 
-    // Export to Excel / CSV (Requirement 5)
+    // Export to Excel / CSV
     function exportLeadsToExcel() {
       let csvContent = 'data:text/csv;charset=utf-8,';
       csvContent += 'Reference No,Client Name,Phone,Email,Score,Label,Stage,Budget AED,Community,Source Form,Assigned Agent\r\n';
 
       leadsData.forEach(l => {
         const row = [
-          `"${l.reference_no}"`,
-          `"${l.full_name}"`,
-          `"${l.phone}"`,
-          `"${l.email}"`,
+          `"${(l.reference_no || '').replace(/"/g, '""')}"`,
+          `"${(l.full_name || '').replace(/"/g, '""')}"`,
+          `"${(l.phone || '').replace(/"/g, '""')}"`,
+          `"${(l.email || '').replace(/"/g, '""')}"`,
           l.score,
-          `"${l.score_label}"`,
-          `"${l.stage}"`,
-          `"${l.budget_aed || ''}"`,
-          `"${l.preferred_community || ''}"`,
-          `"${l.source_form || ''}"`,
-          `"${l.agent_name || ''}"`
+          `"${l.score_label || ''}"`,
+          `"${l.stage || ''}"`,
+          `"${(l.budget_aed || '').replace(/"/g, '""')}"`,
+          `"${(l.preferred_community || '').replace(/"/g, '""')}"`,
+          `"${(l.source_form || '').replace(/"/g, '""')}"`,
+          `"${(l.agent_name || '').replace(/"/g, '""')}"`
         ].join(',');
         csvContent += row + '\r\n';
       });
@@ -1083,11 +1128,12 @@
     }
 
     // =========================================================================
-    // LEAD DOSSIER MODAL WITH CALL / WHATSAPP / NOTES (Requirement 5)
+    // LEAD DOSSIER MODAL WITH SAFE RENDERING
     // =========================================================================
     async function openLeadDossier(id) {
       try {
-        const res = await fetch(`/api/admin/leads/${id}`);
+        const res = await authFetch(`/api/admin/leads/${id}`);
+        if (!res.ok) return;
         const lead = await res.json();
         currentDossierLead = lead;
 
@@ -1130,10 +1176,10 @@
       container.innerHTML = notes.map(n => `
         <div style="background: var(--color-offwhite); padding: 10px 14px; border-left: 3px solid var(--color-gold); font-size: 12px;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-            <strong style="color: var(--color-charcoal);">${n.staff_name || 'Advisor'}</strong>
+            <strong style="color: var(--color-charcoal);">${escapeHtml(n.staff_name || 'Advisor')}</strong>
             <span style="font-size: 10px; color: var(--color-warm-gray);">${new Date(n.created_at).toLocaleDateString()}</span>
           </div>
-          <div>${n.note_text}</div>
+          <div>${escapeHtml(n.note_text)}</div>
         </div>
       `).join('');
     }
@@ -1144,7 +1190,7 @@
       if (!text || !currentDossierLead) return;
 
       try {
-        const res = await fetch(`/api/admin/leads/${currentDossierLead.id}/notes`, {
+        const res = await authFetch(`/api/admin/leads/${currentDossierLead.id}/notes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ staff_id: currentUser.id, staff_name: currentUser.name, note_text: text })
@@ -1172,12 +1218,16 @@
       const newAgentId = document.getElementById('dossierAgentSelect').value;
       if (!currentDossierLead) return;
       try {
-        await fetch(`/api/admin/leads/${currentDossierLead.id}/assign`, {
+        const res = await authFetch(`/api/admin/leads/${currentDossierLead.id}/assign`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ agent_id: newAgentId })
         });
-        alert('Lead reassigned successfully.');
+        if (res.ok) {
+          alert('Lead reassigned successfully.');
+        } else {
+          alert('Failed to reassign lead. Master Admin privilege required.');
+        }
       } catch (err) {
         console.error('Reassign failed:', err);
       }
@@ -1189,24 +1239,25 @@
     }
 
     // =========================================================================
-    // VIEWINGS SCHEDULE (Requirement 5)
+    // VIEWINGS SCHEDULE (With Safe Escaping)
     // =========================================================================
     async function loadViewings() {
       try {
-        const res = await fetch(`/api/admin/viewings?user_id=${currentUser.id}&user_role=${currentUser.role}`);
+        const res = await authFetch('/api/admin/viewings');
+        if (!res.ok) return;
         const viewings = await res.json();
         const tbody = document.getElementById('viewingsTableFull');
         tbody.innerHTML = viewings.map(v => `
           <tr>
             <td>#${v.id}</td>
-            <td><strong>${v.viewing_date}</strong></td>
-            <td>${v.viewing_time}</td>
-            <td>${v.property_title}</td>
-            <td><strong>${v.client_name}</strong></td>
-            <td>${v.client_phone}</td>
-            <td>${v.agent_name}</td>
-            <td><span class="admin-badge badge-viewing">${v.status}</span></td>
-            <td style="font-size: 11.5px; color: var(--color-warm-gray);">${v.feedback || '-'}</td>
+            <td><strong>${escapeHtml(v.viewing_date)}</strong></td>
+            <td>${escapeHtml(v.viewing_time)}</td>
+            <td>${escapeHtml(v.property_title)}</td>
+            <td><strong>${escapeHtml(v.client_name)}</strong></td>
+            <td>${escapeHtml(v.client_phone)}</td>
+            <td>${escapeHtml(v.agent_name)}</td>
+            <td><span class="admin-badge badge-viewing">${escapeHtml(v.status)}</span></td>
+            <td style="font-size: 11.5px; color: var(--color-warm-gray);">${escapeHtml(v.feedback || '-')}</td>
           </tr>
         `).join('');
       } catch (err) {
@@ -1215,83 +1266,87 @@
     }
 
     // =========================================================================
-    // LEADERBOARD & STALE LEADS (Requirement 5)
+    // LEADERBOARD & STALE LEADS (With Safe Escaping)
     // =========================================================================
     async function loadLeaderboardAndStale() {
       // 1. Leaderboard
       try {
-        const res = await fetch('/api/admin/leaderboard');
-        const board = await res.json();
-        document.getElementById('leaderboardContainer').innerHTML = board.map((a, idx) => `
-          <div style="background: var(--color-offwhite); padding: 18px; margin-bottom: 14px; border: 1px solid var(--color-border-subtle);">
-            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
-              <div>
-                <span style="font-size: 12px; font-weight: 700; color: var(--color-gold);">#${idx + 1}</span>
-                <strong style="font-size: 15px; margin-left: 6px;">${a.name}</strong>
+        const res = await authFetch('/api/admin/leaderboard');
+        if (res.ok) {
+          const board = await res.json();
+          document.getElementById('leaderboardContainer').innerHTML = board.map((a, idx) => `
+            <div style="background: var(--color-offwhite); padding: 18px; margin-bottom: 14px; border: 1px solid var(--color-border-subtle);">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+                <div>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--color-gold);">#${idx + 1}</span>
+                  <strong style="font-size: 15px; margin-left: 6px;">${escapeHtml(a.name)}</strong>
+                </div>
+                <span style="font-size: 12px; font-weight: 600; color: var(--color-charcoal);">${a.deals_count} Deals Closed</span>
               </div>
-              <span style="font-size: 12px; font-weight: 600; color: var(--color-charcoal);">${a.deals_count} Deals Closed</span>
+              <div style="font-size: 12px; color: var(--color-warm-gray); margin-bottom: 8px;">
+                Volume: <strong>AED ${(a.volume_aed / 1000000).toFixed(1)}M</strong> &bull; Target: AED ${(a.target_aed / 1000000).toFixed(1)}M &bull; 
+                Commission: <span style="color: var(--color-gold); font-weight: 600;">AED ${Math.round(a.commission_aed).toLocaleString('en-US')}</span>
+              </div>
+              <div style="height: 8px; background: #ddd; position: relative;">
+                <div style="height: 100%; width: ${Math.min(100, a.target_pct)}%; background: var(--color-gold);"></div>
+              </div>
+              <div style="text-align: right; font-size: 10px; color: var(--color-warm-gray); margin-top: 4px;">
+                ${a.target_pct}% of Target Achieved
+              </div>
             </div>
-            <div style="font-size: 12px; color: var(--color-warm-gray); margin-bottom: 8px;">
-              Volume: <strong>AED ${(a.volume_aed / 1000000).toFixed(1)}M</strong> &bull; Target: AED ${(a.target_aed / 1000000).toFixed(1)}M &bull; 
-              Commission: <span style="color: var(--color-gold); font-weight: 600;">AED ${Math.round(a.commission_aed).toLocaleString('en-US')}</span>
-            </div>
-            <div style="height: 8px; background: #ddd; position: relative;">
-              <div style="height: 100%; width: ${Math.min(100, a.target_pct)}%; background: var(--color-gold);"></div>
-            </div>
-            <div style="text-align: right; font-size: 10px; color: var(--color-warm-gray); margin-top: 4px;">
-              ${a.target_pct}% of Target Achieved
-            </div>
-          </div>
-        `).join('');
+          `).join('');
+        }
       } catch (err) {
         console.error('Leaderboard error:', err);
       }
 
       // 2. Stale Leads (3+ Days Inactive)
       try {
-        const sRes = await fetch(`/api/admin/stale-leads?user_id=${currentUser.id}&user_role=${currentUser.role}`);
-        const stales = await sRes.json();
-        const container = document.getElementById('staleLeadsContainer');
-        if (!stales.length) {
-          container.innerHTML = `<div style="font-size: 13px; color: #2e7d32; padding: 20px; background: #e8f5e9; text-align: center;">All leads are active and followed up within 3 days.</div>`;
-          return;
-        }
+        const sRes = await authFetch('/api/admin/stale-leads');
+        if (sRes.ok) {
+          const stales = await sRes.json();
+          const container = document.getElementById('staleLeadsContainer');
+          if (!stales.length) {
+            container.innerHTML = `<div style="font-size: 13px; color: #2e7d32; padding: 20px; background: #e8f5e9; text-align: center;">All leads are active and followed up within 3 days.</div>`;
+            return;
+          }
 
-        container.innerHTML = stales.map(s => `
-          <div style="background: #fff; border-left: 4px solid #c62828; border: 1px solid var(--color-border-subtle); padding: 14px; margin-bottom: 12px; cursor: pointer;" onclick="openLeadDossier(${s.id})">
-            <div style="display: flex; justify-content: space-between;">
-              <strong>${s.full_name}</strong>
-              <span style="font-size: 10.5px; background: #ffebee; color: #c62828; padding: 2px 6px; font-weight: 700;">
-                ${s.days_inactive} DAYS INACTIVE
-              </span>
+          container.innerHTML = stales.map(s => `
+            <div style="background: #fff; border-left: 4px solid #c62828; border: 1px solid var(--color-border-subtle); padding: 14px; margin-bottom: 12px; cursor: pointer;" onclick="openLeadDossier(${s.id})">
+              <div style="display: flex; justify-content: space-between;">
+                <strong>${escapeHtml(s.full_name)}</strong>
+                <span style="font-size: 10.5px; background: #ffebee; color: #c62828; padding: 2px 6px; font-weight: 700;">
+                  ${s.days_inactive} DAYS INACTIVE
+                </span>
+              </div>
+              <div style="font-size: 11.5px; color: var(--color-warm-gray); margin-top: 4px;">
+                Stage: ${escapeHtml(s.stage)} &bull; Budget: ${escapeHtml(s.budget_aed || 'Confidential')} &bull; Agent: ${escapeHtml(s.agent_name)}
+              </div>
             </div>
-            <div style="font-size: 11.5px; color: var(--color-warm-gray); margin-top: 4px;">
-              Stage: ${s.stage} &bull; Budget: ${s.budget_aed || 'Confidential'} &bull; Agent: ${s.agent_name}
-            </div>
-          </div>
-        `).join('');
+          `).join('');
+        }
       } catch (err) {
         console.error('Stale leads error:', err);
       }
     }
 
     // =========================================================================
-    // INVENTORY MANAGER: ADD, EDIT, REMOVE (Requirement 5)
+    // INVENTORY MANAGER (With Safe Escaping & Auth)
     // =========================================================================
     async function loadInventory() {
       try {
-        const res = await fetch('/api/properties');
+        const res = await authFetch('/api/properties');
         const props = await res.json();
         const tbody = document.getElementById('inventoryPropertiesTable');
         tbody.innerHTML = props.map(p => `
           <tr>
-            <td><strong>${p.title}</strong></td>
-            <td>${p.property_type}</td>
-            <td>${p.community}</td>
+            <td><strong>${escapeHtml(p.title)}</strong></td>
+            <td>${escapeHtml(p.property_type)}</td>
+            <td>${escapeHtml(p.community)}</td>
             <td><strong>AED ${Number(p.price_aed).toLocaleString('en-US')}</strong></td>
             <td>${p.bedrooms} Beds</td>
             <td>${p.built_up_sqft.toLocaleString('en-US')} Sq.Ft.</td>
-            <td><span class="admin-badge ${p.status === 'Sold' ? 'badge-closed' : 'badge-new'}">${p.status}</span></td>
+            <td><span class="admin-badge ${p.status === 'Sold' ? 'badge-closed' : 'badge-new'}">${escapeHtml(p.status)}</span></td>
             <td>
               <button class="btn btn-sm btn-charcoal-outline" style="padding: 4px 8px; font-size: 9px;" onclick="deletePropertyItem(${p.id})">Remove</button>
             </td>
@@ -1323,15 +1378,19 @@
       };
 
       try {
-        const res = await fetch('/api/properties', {
+        const res = await authFetch('/api/properties', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        const data = await res.json();
-        closeAddPropertyModal();
-        alert('Property added to portfolio successfully!');
-        loadInventory();
+        if (res.ok) {
+          closeAddPropertyModal();
+          alert('Property added to portfolio successfully!');
+          loadInventory();
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Failed to add property.');
+        }
       } catch (err) {
         console.error('Failed to add property:', err);
       }
@@ -1340,8 +1399,13 @@
     async function deletePropertyItem(id) {
       if (!confirm('Are you sure you want to remove this residence from the portfolio?')) return;
       try {
-        await fetch(`/api/properties/${id}`, { method: 'DELETE' });
-        loadInventory();
+        const res = await authFetch(`/api/properties/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          loadInventory();
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Delete failed: Master Admin privileges required.');
+        }
       } catch (err) {
         console.error('Delete failed:', err);
       }

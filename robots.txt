@@ -1,14 +1,8 @@
 User-agent: *
-# Confidential Administrative Enclaves & Staff Endpoints (Hidden from Spiders)
+# Confidential Administrative Enclaves & Staff Endpoints
 Disallow: /admin.html
 Disallow: /login.html
-Disallow: /api/admin/
-Disallow: /api/auth/
-Disallow: /db/
-Disallow: /.env
-Disallow: /server.js
-Disallow: /package.json
-Disallow: /package-lock.json
+Disallow: /api/
 
 # Public Residential Portfolios & Advisory Pages
 Allow: /

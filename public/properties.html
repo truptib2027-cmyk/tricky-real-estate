@@ -590,7 +590,7 @@
       }
 
       grid.innerHTML = filtered.map(p => `
-        <article class="property-card" onclick="openPropertyModalById(${p.id})">
+        <article class="property-card" tabindex="0" role="link" aria-label="${p.title}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); openPropertyModalById(p.id);}" onclick="openPropertyModalById(${p.id})">
           <div class="property-image-wrapper">
             <img src="${p.image_url}" alt="${p.title}" loading="lazy">
             <div class="property-badge">${p.community}</div>

@@ -1,22 +1,47 @@
 /**
- * TRICKY REAL ESTATE - DATABASE CONTROLLER (NEON POSTGRESQL + LOCAL FALLBACK)
- * Full CRM logic: Lead Scoring (0-100), HOT/WARM/COLD, Kanban Stages, Won Deal 2% Commission,
- * Notification Bell, Agent Access Scoping, Property/Project CRUD, and Activity Tracking.
+ * TRICKY REAL ESTATE - DATABASE CONTROLLER (NEON POSTGRESQL + LOCAL SECURE STORE)
+ * Hardened Authentication, Password Hashing, Agent Access Scoping,
+ * Full CRM Logic & PostgreSQL Persistence Synchronization.
  */
 
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const seedData = require('./seedData');
 
 let pool = null;
 let isNeonConnected = false;
 let neonError = null;
 
+// Password Hashing & Verification (OWASP A02:2021 Remediation)
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, stored) {
+  if (!stored) return false;
+  if (stored.includes(':')) {
+    const [salt, key] = stored.split(':');
+    const keyBuffer = Buffer.from(key, 'hex');
+    const derivedKey = crypto.scryptSync(password, salt, 64);
+    if (keyBuffer.length !== derivedKey.length) return false;
+    return crypto.timingSafeEqual(keyBuffer, derivedKey);
+  }
+  // Backwards compatibility with initial plain text seeds, upgrade seamlessly
+  return stored === password.trim();
+}
+
 // Local In-Memory Storage
 let memoryStore = {
   developers: [...seedData.developers],
-  staff_logins: [...seedData.staff_logins],
+  staff_logins: seedData.staff_logins.map(s => ({
+    ...s,
+    // Ensure passwords in memory store are hashed
+    password: s.password.includes(':') ? s.password : hashPassword(s.password)
+  })),
   off_plan_projects: [...seedData.off_plan_projects],
   properties: [...seedData.properties],
   buyer_leads: [...seedData.sample_leads],
@@ -88,7 +113,7 @@ async function runMigrationsAndSeed() {
         );
       }
 
-      for (const staff of seedData.staff_logins) {
+      for (const staff of memoryStore.staff_logins) {
         await client.query(
           `INSERT INTO staff_logins (id, name, email, password, role, phone, bio, avatar_url, monthly_target_aed)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (email) DO NOTHING`,
@@ -166,22 +191,25 @@ async function runMigrationsAndSeed() {
 }
 
 // -----------------------------------------------------------------------------
-// Authentication
+// Authentication (Hashed Password Verification)
 // -----------------------------------------------------------------------------
 async function authenticateStaff(email, password) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const cleanPassword = (password || '').trim();
+
   if (isNeonConnected && pool) {
-    const res = await pool.query('SELECT * FROM staff_logins WHERE LOWER(email) = LOWER($1)', [email.trim()]);
+    const res = await pool.query('SELECT * FROM staff_logins WHERE LOWER(email) = LOWER($1)', [cleanEmail]);
     if (res.rows.length === 0) return null;
     const user = res.rows[0];
-    if (user.password === password.trim()) {
+    if (verifyPassword(cleanPassword, user.password)) {
       delete user.password;
       return user;
     }
     return null;
   }
 
-  const user = memoryStore.staff_logins.find(s => s.email.toLowerCase() === email.trim().toLowerCase());
-  if (user && user.password === password.trim()) {
+  const user = memoryStore.staff_logins.find(s => s.email.toLowerCase() === cleanEmail);
+  if (user && verifyPassword(cleanPassword, user.password)) {
     const safeUser = { ...user };
     delete safeUser.password;
     return safeUser;
@@ -195,7 +223,6 @@ async function authenticateStaff(email, password) {
 async function createBuyerLead(data) {
   const refNo = 'TRK-' + Math.floor(100000 + Math.random() * 900000);
   
-  // Calculate Score 0-100 & Label (HOT/WARM/COLD)
   const isCash = data.is_cash_buyer === true || data.is_cash_buyer === 'true' || /cash/i.test(data.message || '');
   const timeframe = data.purchase_timeframe || (/immediate|asap|urgent|this week/i.test(data.message || '') ? 'Immediately' : 'Within 1-3 Months');
 
@@ -208,7 +235,6 @@ async function createBuyerLead(data) {
     purchase_timeframe: timeframe
   });
 
-  // Assign agent (round robin or based on property agent)
   let assignedAgentId = 1;
   if (data.property_id) {
     const p = memoryStore.properties.find(prop => prop.id === parseInt(data.property_id, 10));
@@ -241,22 +267,28 @@ async function createBuyerLead(data) {
   };
 
   if (isNeonConnected && pool) {
-    const res = await pool.query(
-      `INSERT INTO buyer_leads (reference_no, full_name, email, phone, lead_type, source_form, property_id, project_id, budget_aed, preferred_community, message, score, score_label, is_cash_buyer, purchase_timeframe, stage, assigned_agent_id, last_activity_date, is_read)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
-       RETURNING *`,
-      [lead.reference_no, lead.full_name, lead.email, lead.phone, lead.lead_type, lead.source_form, lead.property_id, lead.project_id, lead.budget_aed, lead.preferred_community, lead.message, lead.score, lead.score_label, lead.is_cash_buyer, lead.purchase_timeframe, lead.stage, lead.assigned_agent_id, lead.last_activity_date, lead.is_read]
-    );
-    return res.rows[0];
+    try {
+      const res = await pool.query(
+        `INSERT INTO buyer_leads (reference_no, full_name, email, phone, lead_type, source_form, property_id, project_id, budget_aed, preferred_community, message, score, score_label, is_cash_buyer, purchase_timeframe, stage, assigned_agent_id, last_activity_date, is_read)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+         RETURNING *`,
+        [lead.reference_no, lead.full_name, lead.email, lead.phone, lead.lead_type, lead.source_form, lead.property_id, lead.project_id, lead.budget_aed, lead.preferred_community, lead.message, lead.score, lead.score_label, lead.is_cash_buyer, lead.purchase_timeframe, lead.stage, lead.assigned_agent_id, lead.last_activity_date, lead.is_read]
+      );
+      lead.id = res.rows[0].id;
+    } catch (e) {
+      console.error('[DATABASE] Neon lead insert warning:', e.message);
+    }
   }
 
-  lead.id = memoryStore.buyer_leads.length + 1;
+  if (!lead.id) lead.id = memoryStore.buyer_leads.length + 1;
   memoryStore.buyer_leads.unshift(lead);
   return lead;
 }
 
-// "Agents only see their own leads"
+// "Agents only see their own leads" (Strict scoping & unauthenticated protection)
 async function getLeads(currentUser) {
+  if (!currentUser) return [];
+
   let list = [];
   if (isNeonConnected && pool) {
     let query = `
@@ -268,9 +300,11 @@ async function getLeads(currentUser) {
       WHERE 1=1
     `;
     const params = [];
-    if (currentUser && currentUser.role === 'agent') {
+    if (currentUser.role === 'agent') {
       params.push(currentUser.id);
       query += ` AND l.assigned_agent_id = $${params.length}`;
+    } else if (currentUser.role !== 'admin') {
+      return [];
     }
     query += ' ORDER BY l.id DESC';
     const res = await pool.query(query, params);
@@ -288,8 +322,10 @@ async function getLeads(currentUser) {
       };
     });
 
-    if (currentUser && currentUser.role === 'agent') {
+    if (currentUser.role === 'agent') {
       list = list.filter(l => l.assigned_agent_id === currentUser.id);
+    } else if (currentUser.role !== 'admin') {
+      return [];
     }
   }
 
@@ -322,17 +358,26 @@ async function updateLeadStage(leadId, newStage, extraData = {}) {
   lead.stage = newStage;
   lead.last_activity_date = new Date().toISOString();
 
-  // If marked "Won", process sale and 2% commission!
+  if (isNeonConnected && pool) {
+    try {
+      await pool.query('UPDATE buyer_leads SET stage = $1, last_activity_date = NOW() WHERE id = $2', [newStage, id]);
+    } catch (e) {
+      console.warn('[DATABASE] Neon stage update warning:', e.message);
+    }
+  }
+
   let saleRecord = null;
   if (newStage === 'Won') {
     const salePrice = parseFloat(extraData.sale_price_aed) || (lead.property_id ? 15000000 : 8000000);
-    const commission = salePrice * 0.02; // Exactly 2% commission per specification
+    const commission = salePrice * 0.02; // Exactly 2% commission
 
-    // Mark property as sold
     if (lead.property_id) {
       const prop = memoryStore.properties.find(p => p.id === lead.property_id);
       if (prop) {
         prop.status = 'Sold';
+        if (isNeonConnected && pool) {
+          pool.query("UPDATE properties SET status = 'Sold' WHERE id = $1", [lead.property_id]).catch(() => {});
+        }
       }
     }
 
@@ -349,15 +394,29 @@ async function updateLeadStage(leadId, newStage, extraData = {}) {
     };
     memoryStore.completed_sales.unshift(saleRecord);
 
-    // Add winning note
-    memoryStore.notes.unshift({
+    if (isNeonConnected && pool) {
+      pool.query(
+        `INSERT INTO completed_sales (property_id, property_title, community, buyer_name, staff_id, sale_price_aed, commission_aed, sale_date)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [saleRecord.property_id, saleRecord.property_title, saleRecord.community, saleRecord.buyer_name, saleRecord.staff_id, saleRecord.sale_price_aed, saleRecord.commission_aed, saleRecord.sale_date]
+      ).catch(() => {});
+    }
+
+    const note = {
       id: memoryStore.notes.length + 1,
       lead_id: id,
       staff_id: lead.assigned_agent_id || 1,
       staff_name: extraData.staff_name || 'System',
       note_text: `🎉 Deal Closed WON! Sale Price: AED ${salePrice.toLocaleString('en-US')}. 2% Advisory Commission: AED ${commission.toLocaleString('en-US')}. Property marked as SOLD.`,
       created_at: new Date().toISOString()
-    });
+    };
+    memoryStore.notes.unshift(note);
+    if (isNeonConnected && pool) {
+      pool.query(
+        `INSERT INTO notes (lead_id, staff_id, staff_name, note_text) VALUES ($1, $2, $3, $4)`,
+        [note.lead_id, note.staff_id, note.staff_name, note.note_text]
+      ).catch(() => {});
+    }
   }
 
   return { lead, saleRecord };
@@ -375,9 +434,20 @@ async function addLeadNote(leadId, staffId, staffName, text) {
   };
   memoryStore.notes.unshift(note);
 
-  // Update last activity date
   const lead = memoryStore.buyer_leads.find(l => l.id === parseInt(leadId, 10));
   if (lead) lead.last_activity_date = new Date().toISOString();
+
+  if (isNeonConnected && pool) {
+    try {
+      await pool.query(
+        `INSERT INTO notes (lead_id, staff_id, staff_name, note_text) VALUES ($1, $2, $3, $4)`,
+        [note.lead_id, note.staff_id, note.staff_name, note.note_text]
+      );
+      await pool.query('UPDATE buyer_leads SET last_activity_date = NOW() WHERE id = $1', [note.lead_id]);
+    } catch (e) {
+      console.warn('[DATABASE] Neon note insert warning:', e.message);
+    }
+  }
 
   return note;
 }
@@ -388,6 +458,14 @@ async function reassignLead(leadId, newAgentId) {
   if (lead) {
     lead.assigned_agent_id = parseInt(newAgentId, 10);
     lead.last_activity_date = new Date().toISOString();
+
+    if (isNeonConnected && pool) {
+      try {
+        await pool.query('UPDATE buyer_leads SET assigned_agent_id = $1, last_activity_date = NOW() WHERE id = $2', [lead.assigned_agent_id, lead.id]);
+      } catch (e) {
+        console.warn('[DATABASE] Neon reassign warning:', e.message);
+      }
+    }
     return lead;
   }
   return null;
@@ -397,8 +475,10 @@ async function reassignLead(leadId, newAgentId) {
 // Notification Bell: Count of New / Unread leads
 // -----------------------------------------------------------------------------
 async function getNotificationStats(currentUser) {
+  if (!currentUser) return { unreadCount: 0, recentLeads: [] };
+
   let leads = memoryStore.buyer_leads;
-  if (currentUser && currentUser.role === 'agent') {
+  if (currentUser.role === 'agent') {
     leads = leads.filter(l => l.assigned_agent_id === currentUser.id);
   }
 
@@ -420,6 +500,8 @@ async function getNotificationStats(currentUser) {
 // Stale Leads (No Activity for 3+ days)
 // -----------------------------------------------------------------------------
 async function getStaleLeads(currentUser) {
+  if (!currentUser) return [];
+
   const threeDaysAgo = new Date();
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
@@ -429,7 +511,7 @@ async function getStaleLeads(currentUser) {
     new Date(l.last_activity_date) <= threeDaysAgo
   );
 
-  if (currentUser && currentUser.role === 'agent') {
+  if (currentUser.role === 'agent') {
     leads = leads.filter(l => l.assigned_agent_id === currentUser.id);
   }
 
@@ -470,7 +552,7 @@ async function getLeaderboard() {
 }
 
 // -----------------------------------------------------------------------------
-// Property & Project CRUD Operations
+// Property & Project CRUD Operations (with PostgreSQL Sync)
 // -----------------------------------------------------------------------------
 async function addProperty(data) {
   const newProp = {
@@ -491,21 +573,56 @@ async function addProperty(data) {
     amenities: Array.isArray(data.amenities) ? data.amenities : ['Panoramic Views', 'Private Pool', 'Concierge Service'],
     agent_id: parseInt(data.agent_id, 10) || 1
   };
+
+  if (isNeonConnected && pool) {
+    try {
+      const res = await pool.query(
+        `INSERT INTO properties (slug, title, property_type, community, sub_community, price_aed, bedrooms, bathrooms, built_up_sqft, status, featured, description, image_url, amenities, agent_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
+        [newProp.slug, newProp.title, newProp.property_type, newProp.community, newProp.sub_community, newProp.price_aed, newProp.bedrooms, newProp.bathrooms, newProp.built_up_sqft, newProp.status, newProp.featured, newProp.description, newProp.image_url, newProp.amenities, newProp.agent_id]
+      );
+      newProp.id = res.rows[0].id;
+    } catch (e) {
+      console.warn('[DATABASE] Neon property insert warning:', e.message);
+    }
+  }
+
   memoryStore.properties.unshift(newProp);
   return newProp;
 }
 
 async function updateProperty(id, data) {
-  const prop = memoryStore.properties.find(p => p.id === parseInt(id, 10));
+  const propId = parseInt(id, 10);
+  const prop = memoryStore.properties.find(p => p.id === propId);
   if (!prop) return null;
   Object.assign(prop, data);
+
+  if (isNeonConnected && pool) {
+    try {
+      await pool.query(
+        `UPDATE properties SET title = COALESCE($1, title), price_aed = COALESCE($2, price_aed), community = COALESCE($3, community) WHERE id = $4`,
+        [data.title, data.price_aed, data.community, propId]
+      );
+    } catch (e) {
+      console.warn('[DATABASE] Neon property update warning:', e.message);
+    }
+  }
   return prop;
 }
 
 async function deleteProperty(id) {
-  const index = memoryStore.properties.findIndex(p => p.id === parseInt(id, 10));
+  const propId = parseInt(id, 10);
+  const index = memoryStore.properties.findIndex(p => p.id === propId);
   if (index !== -1) {
-    return memoryStore.properties.splice(index, 1)[0];
+    const deleted = memoryStore.properties.splice(index, 1)[0];
+    if (isNeonConnected && pool) {
+      try {
+        await pool.query('DELETE FROM properties WHERE id = $1', [propId]);
+      } catch (e) {
+        console.warn('[DATABASE] Neon property delete warning:', e.message);
+      }
+    }
+    return deleted;
   }
   return null;
 }
@@ -529,21 +646,41 @@ async function addProject(data) {
     image_url: data.image_url || 'assets/images/offplan_tower.jpg',
     featured: true
   };
+
+  if (isNeonConnected && pool) {
+    try {
+      const res = await pool.query(
+        `INSERT INTO off_plan_projects (slug, name, developer_id, community, starting_price_aed, handover_date, payment_plan_summary, down_payment_pct, during_construction_pct, on_handover_pct, description, bedrooms_available, roi_estimate, image_url, featured)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
+        [newProj.slug, newProj.name, newProj.developer_id, newProj.community, newProj.starting_price_aed, newProj.handover_date, newProj.payment_plan_summary, newProj.down_payment_pct, newProj.during_construction_pct, newProj.on_handover_pct, newProj.description, newProj.bedrooms_available, newProj.roi_estimate, newProj.image_url, newProj.featured]
+      );
+      newProj.id = res.rows[0].id;
+    } catch (e) {
+      console.warn('[DATABASE] Neon project insert warning:', e.message);
+    }
+  }
+
   memoryStore.off_plan_projects.unshift(newProj);
   return newProj;
 }
 
 async function updateProject(id, data) {
-  const proj = memoryStore.off_plan_projects.find(p => p.id === parseInt(id, 10));
+  const projId = parseInt(id, 10);
+  const proj = memoryStore.off_plan_projects.find(p => p.id === projId);
   if (!proj) return null;
   Object.assign(proj, data);
   return proj;
 }
 
 async function deleteProject(id) {
-  const index = memoryStore.off_plan_projects.findIndex(p => p.id === parseInt(id, 10));
+  const projId = parseInt(id, 10);
+  const index = memoryStore.off_plan_projects.findIndex(p => p.id === projId);
   if (index !== -1) {
-    return memoryStore.off_plan_projects.splice(index, 1)[0];
+    const deleted = memoryStore.off_plan_projects.splice(index, 1)[0];
+    if (isNeonConnected && pool) {
+      pool.query('DELETE FROM off_plan_projects WHERE id = $1', [projId]).catch(() => {});
+    }
+    return deleted;
   }
   return null;
 }
@@ -563,7 +700,10 @@ async function getProperties(filter = {}) {
   }
   return list;
 }
+
 async function getViewings(currentUser) {
+  if (!currentUser) return [];
+
   let list = memoryStore.viewings.map(v => {
     const prop = memoryStore.properties.find(p => p.id === v.property_id);
     const lead = memoryStore.buyer_leads.find(l => l.id === v.lead_id);
@@ -576,7 +716,7 @@ async function getViewings(currentUser) {
       agent_name: staff ? staff.name : 'Tariq Al-Mansoor'
     };
   });
-  if (currentUser && currentUser.role === 'agent') {
+  if (currentUser.role === 'agent') {
     list = list.filter(v => v.staff_id === currentUser.id);
   }
   return list;
@@ -604,10 +744,17 @@ function getDbStatus() {
 
 module.exports = {
   initDatabase,
-  authenticateStaff,
+  getDbStatus,
   getDevelopers,
   getOffPlanProjects,
   getProperties,
+  addProperty,
+  updateProperty,
+  deleteProperty,
+  addProject,
+  updateProject,
+  deleteProject,
+  authenticateStaff,
   createBuyerLead,
   getLeads,
   getLeadById,
@@ -617,14 +764,9 @@ module.exports = {
   getNotificationStats,
   getStaleLeads,
   getLeaderboard,
-  addProperty,
-  updateProperty,
-  deleteProperty,
-  addProject,
-  updateProject,
-  deleteProject,
   getViewings,
   getCompletedSales,
   getStaff,
-  getDbStatus
+  hashPassword,
+  verifyPassword
 };

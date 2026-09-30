@@ -18,6 +18,7 @@
   --color-border-subtle: rgba(26, 26, 26, 0.08);
   --color-border-subtle-white: rgba(255, 255, 255, 0.15);
   --color-gold: #B8975A;
+  --color-gold-text: #916E2E; /* WCAG AA 4.6:1 contrast compliant */
   --color-gold-hover: #c7a76c;
   --color-gold-light: rgba(184, 151, 90, 0.12);
 
@@ -38,6 +39,18 @@
   /* Container */
   --container-max: 1360px;
   --header-height: 96px;
+}
+
+/* Accessibility Focus Indicator (WCAG 2.4.7) */
+:focus-visible {
+  outline: 2px solid var(--color-gold) !important;
+  outline-offset: 3px !important;
+}
+
+.property-card:focus-visible {
+  outline: 2px solid var(--color-gold) !important;
+  outline-offset: 4px !important;
+  transform: translateY(-4px);
 }
 
 *, *::before, *::after {
