@@ -15,7 +15,7 @@ An ultra-luxury real estate website and private CRM platform tailored specifical
 - **About & Contact**: Downtown Dubai headquarters details (Boulevard Plaza Tower 1), senior partner leadership bios, direct VIP telephone (+971 4 800 8742), and direct contact form.
 - **Universal Floating Concierge**: Floating WhatsApp VIP Desk and **"Call Me Back"** modal on every page.
 - **Prompt-Exact Confirmation**: Every form submission displays the exact requested message:
-  > *"Thank you. A Jay Real Estate advisor will contact you within 24 hours."*
+  > *"A Tricky Real Estate advisor will contact you within 24 hours."*
 - **Strictly Zero Email Sending**: No SMTP or third-party mailers; all buyer inquiries are securely ingested straight into the database.
 
 ### 2. Lead Intelligence & Anti-Spam Engine

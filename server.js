@@ -113,7 +113,7 @@ function validateAndCheckSpam(req, res, next) {
     return res.json({
       success: true,
       reference_no: 'TRK-SPAM-PREVENTED',
-      thank_you_message: 'Thank you. A Jay Real Estate advisor will contact you within 24 hours.'
+      thank_you_message: 'Thank you. A Tricky Real Estate advisor will contact you within 24 hours.'
     });
   }
 
@@ -125,7 +125,7 @@ function validateAndCheckSpam(req, res, next) {
       return res.json({
         success: true,
         reference_no: 'TRK-SPEED-PREVENTED',
-        thank_you_message: 'Thank you. A Jay Real Estate advisor will contact you within 24 hours.'
+        thank_you_message: 'Thank you. A Tricky Real Estate advisor will contact you within 24 hours.'
       });
     }
   }
@@ -229,9 +229,9 @@ app.post('/api/leads', rateLimitFormSubmissions, validateAndCheckSpam, async (re
       success: true,
       reference_no: lead.reference_no,
       lead,
-      // Exact prompt requirement 6:
+      // Exact prompt requirement:
       thank_you_title: 'Inquiry Confirmed',
-      thank_you_message: 'Thank you. A Jay Real Estate advisor will contact you within 24 hours.'
+      thank_you_message: 'Thank you. A Tricky Real Estate advisor will contact you within 24 hours.'
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -257,7 +257,7 @@ app.post('/api/viewings', rateLimitFormSubmissions, validateAndCheckSpam, async 
       success: true,
       reference_no: lead.reference_no,
       thank_you_title: 'Viewing Request Received',
-      thank_you_message: 'Thank you. A Jay Real Estate advisor will contact you within 24 hours.'
+      thank_you_message: 'Thank you. A Tricky Real Estate advisor will contact you within 24 hours.'
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

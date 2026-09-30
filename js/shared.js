@@ -325,10 +325,10 @@ async function handleLuxuryFormSubmit(form, endpoint = '/api/leads', leadType = 
       return;
     }
 
-    // Show exact requested confirmation message (Requirement 6):
+    // Show requested confirmation message:
     showThankYouModal(
       'Inquiry Confirmed',
-      'Thank you. A Jay Real Estate advisor will contact you within 24 hours.',
+      'A Tricky Real Estate advisor will contact you within 24 hours.',
       data.reference_no
     );
 
@@ -344,7 +344,7 @@ async function handleLuxuryFormSubmit(form, endpoint = '/api/leads', leadType = 
     const refNo = 'TRK-' + Math.floor(100000 + Math.random() * 900000);
     showThankYouModal(
       'Inquiry Confirmed',
-      'Thank you. A Jay Real Estate advisor will contact you within 24 hours.',
+      'A Tricky Real Estate advisor will contact you within 24 hours.',
       refNo
     );
     form.reset();
